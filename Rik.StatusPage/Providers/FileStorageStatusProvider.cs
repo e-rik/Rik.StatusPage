@@ -11,37 +11,37 @@ namespace Rik.StatusPage.Providers
 {
     public class FileStorageStatusProvider : StatusProvider
     {
-        private readonly string location;
+        private readonly string storagePath;
         private readonly bool requireRead;
         private readonly bool requireWrite;
 
         public FileStorageStatusProvider(StatusProviderConfigurationElement configuration)
             : base(configuration)
         {
-            if (string.IsNullOrWhiteSpace(configuration.Location))
-                throw new ArgumentException("File storage location is required.", nameof(configuration.Location));
+            if (string.IsNullOrWhiteSpace(configuration.StoragePath))
+                throw new ArgumentException("File storage path is required.", nameof(configuration.StoragePath));
 
-            location = configuration.Location;
+            storagePath = configuration.StoragePath;
             requireRead = configuration.RequireRead;
             requireWrite = configuration.RequireWrite;
         }
 
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
-            externalUnit.Uri = location;
+            externalUnit.Uri = storagePath;
 
-            if (!Directory.Exists(location))
-                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage location doesn't exist or is not accessible.");
+            if (!Directory.Exists(storagePath))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't exist or is not accessible.");
 
-            var accessControl = Directory.GetAccessControl(location);
+            var accessControl = Directory.GetAccessControl(storagePath);
             var accessRules = accessControl?.GetAccessRules(true, true, typeof(SecurityIdentifier));
             var applicationIdentity = WindowsIdentity.GetCurrent();
 
             if (requireRead && !HasRights(accessRules, applicationIdentity, FileSystemRights.Read))
-                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage location doesn't have reading rights.");
+                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't have reading rights.");
 
             if (requireWrite && !HasRights(accessRules, applicationIdentity, FileSystemRights.Write))
-                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage location doesn't have writing rights.");
+                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't have writing rights.");
 
             return externalUnit.SetStatus(UnitStatus.Ok);
         }

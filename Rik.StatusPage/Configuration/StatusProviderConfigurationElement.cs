@@ -27,17 +27,17 @@ namespace Rik.StatusPage.Configuration
             }
         }
 
-        [ConfigurationProperty("location", IsRequired = false)]
-        public string Location
+        [ConfigurationProperty("storagePath", IsRequired = false)]
+        public string StoragePath
         {
             get
             {
-                var rawValue = (string) this["location"];
+                var rawValue = (string) this["storagePath"];
 
                 if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
                 {
-                    var location = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[location];
+                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[storagePath];
                 }
 
                 return rawValue;
