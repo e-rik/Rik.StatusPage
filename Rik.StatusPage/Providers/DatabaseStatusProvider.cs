@@ -13,6 +13,7 @@ namespace Rik.StatusPage.Providers
 
         protected abstract IEnumerable<string> ConnectionTypeNames { get; }
         protected abstract string VersionQuery { get; }
+        protected abstract string PlatformName { get; }
 
         protected DatabaseStatusProvider(StatusProviderConfigurationElement configuration)
             : base(configuration)
@@ -33,8 +34,10 @@ namespace Rik.StatusPage.Providers
                 {
                     command.CommandText = VersionQuery;
 
+                    // TODO: externalUnit.Uri = ?
                     externalUnit.ServerPlatform = new ServerPlatform
                     {
+                        Name = PlatformName,
                         Version = Convert.ToString(command.ExecuteScalar())
                     };
 

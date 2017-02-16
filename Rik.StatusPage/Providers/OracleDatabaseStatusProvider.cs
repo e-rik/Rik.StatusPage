@@ -12,6 +12,7 @@ namespace Rik.StatusPage.Providers
         };
 
         protected override string VersionQuery => "SELECT version FROM V$INSTANCE";
+        protected override string PlatformName { get; } = "Oracle Database";
 
         public OracleDatabaseStatusProvider(StatusProviderConfigurationElement configuration)
             : base(configuration)

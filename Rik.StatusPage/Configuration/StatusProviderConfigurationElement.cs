@@ -15,19 +15,39 @@ namespace Rik.StatusPage.Configuration
         {
             get
             {
-                var connectionStringRaw = (string) this["connectionString"];
+                var rawValue = (string) this["connectionString"];
 
-                if (connectionStringRaw.StartsWith("${") && connectionStringRaw.EndsWith("}"))
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
                 {
-                    var connectionString = connectionStringRaw.Substring(2, connectionStringRaw.Length - 3);
+                    var connectionString = rawValue.Substring(2, rawValue.Length - 3);
                     return ConfigurationManager.AppSettings[connectionString];
                 }
 
-                return connectionStringRaw;
+                return rawValue;
             }
         }
 
-        [ConfigurationProperty("connectionType", IsRequired = false)]
-        public string ConnectionTypeName => (string) this["connectionType"];
+        [ConfigurationProperty("location", IsRequired = false)]
+        public string Location
+        {
+            get
+            {
+                var rawValue = (string) this["location"];
+
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
+                {
+                    var location = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[location];
+                }
+
+                return rawValue;
+            }
+        }
+
+        [ConfigurationProperty("requireRead", IsRequired = false, DefaultValue = false)]
+        public bool RequireRead => (bool) this["requireRead"];
+
+        [ConfigurationProperty("requireWrite", IsRequired = false, DefaultValue = false)]
+        public bool RequireWrite => (bool) this["requireWrite"];
     }
 }
