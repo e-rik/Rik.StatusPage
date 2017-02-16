@@ -46,9 +46,11 @@
     <Compile Include="Configuration\StatusPageConfigurationSection.cs" />
     <Compile Include="Configuration\StatusProviderConfigurationCollection.cs" />
     <Compile Include="Configuration\StatusProviderConfigurationElement.cs" />
-    <Compile Include="Configuration\StatusProviderType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\DatabaseStatusProvider.cs" />
+    <Compile Include="Providers\MsSqlDatabaseStatusProvider.cs" />
+    <Compile Include="Providers\OracleDatabaseStatusProvider.cs" />
+    <Compile Include="Providers\PostgreDatabaseStatusProvider.cs" />
     <Compile Include="Providers\StatusProvider.cs" />
     <Compile Include="Schema\Application.cs" />
     <Compile Include="Schema\ExternalUnit.cs" />

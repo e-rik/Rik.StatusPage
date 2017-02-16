@@ -1,6 +1,4 @@
-﻿using System;
-using System.Configuration;
-using System.Reflection;
+﻿using System.Configuration;
 
 namespace Rik.StatusPage.Configuration
 {
@@ -10,7 +8,7 @@ namespace Rik.StatusPage.Configuration
         public string Name => (string) this["name"];
 
         [ConfigurationProperty("type", IsRequired = true)]
-        public StatusProviderType Type => (StatusProviderType) this["type"];
+        public string Type => (string) this["type"];
 
         [ConfigurationProperty("connectionString", IsRequired = false)]
         public string ConnectionString
@@ -31,23 +29,5 @@ namespace Rik.StatusPage.Configuration
 
         [ConfigurationProperty("connectionType", IsRequired = false)]
         public string ConnectionTypeName => (string) this["connectionType"];
-
-        public Type ConnectionType
-        {
-            get
-            {
-                var split = ConnectionTypeName.Split(',');
-
-                var connectionTypeStr = split[0].Trim();
-                var assemblyStr = split[1].Trim();
-
-                var assembly = Assembly.Load(assemblyStr);
-                var connectionType = assembly.GetType(connectionTypeStr);
-
-                // TODO: kontrollid assembly laadimise ja tüübi vastavuse osas
-
-                return connectionType;
-            }
-        }
     }
 }

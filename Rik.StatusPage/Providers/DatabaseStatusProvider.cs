@@ -1,28 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using Rik.StatusPage.Configuration;
 using Rik.StatusPage.Schema;
 
 namespace Rik.StatusPage.Providers
 {
-    public class DatabaseStatusProvider : StatusProvider
+    public abstract class DatabaseStatusProvider : StatusProvider
     {
-        private readonly string connectionString;
         private readonly Type connectionType;
 
-        // MsSql -   SELECT SERVERPROPERTY('productversion'), SERVERPROPERTY('productlevel'), SERVERPROPERTY('edition')
-        // Oracle -  SELECT version FROM V$INSTANCE
-        // Postgre - SELECT version();
-        public DatabaseStatusProvider(string name, string connectionString, Type connectionType)
-            : base(name)
+        protected abstract IEnumerable<string> ConnectionTypeNames { get; }
+        protected abstract string VersionQuery { get; }
+
+        protected DatabaseStatusProvider(StatusProviderConfigurationElement configuration)
+            : base(configuration)
         {
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new ArgumentException("Database connection string is required.", nameof(connectionString));
+            if (string.IsNullOrWhiteSpace(configuration.ConnectionString))
+                throw new ArgumentException("Database connection string is required.", nameof(configuration.ConnectionString));
 
-            if (connectionType == null)
-                throw new ArgumentException("Database connection type is required.", nameof(connectionType));
-
-            this.connectionString = connectionString;
-            this.connectionType = connectionType;
+            connectionType = GetConnectionType();
         }
 
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
@@ -30,13 +28,16 @@ namespace Rik.StatusPage.Providers
             using (var connection = CreateConnection())
             {
                 connection.Open();
-                //externalUnit.ServerPlatform.Version = connection.ServerVersion;
 
                 using (var command = connection.CreateCommand())
                 {
-                    command.CommandText = "SELECT 1 FROM DUAL";
+                    command.CommandText = VersionQuery;
 
-                    command.ExecuteScalar();
+                    externalUnit.ServerPlatform = new ServerPlatform
+                    {
+                        Version = Convert.ToString(command.ExecuteScalar())
+                    };
+
                     return externalUnit.SetStatus(UnitStatus.Ok);
                 }
             }
@@ -46,9 +47,18 @@ namespace Rik.StatusPage.Providers
         {
             var connection = (IDbConnection) Activator.CreateInstance(connectionType);
 
-            connection.ConnectionString = connectionString;
+            connection.ConnectionString = configuration.ConnectionString;
 
             return connection;
+        }
+
+        private Type GetConnectionType()
+        {
+            var type = ConnectionTypeNames.Select(Type.GetType).FirstOrDefault();
+            if (type == null)
+                throw new Exception($"Cannot load database connection type: {string.Join(", ", ConnectionTypeNames)}.");
+
+            return type;
         }
     }
 }

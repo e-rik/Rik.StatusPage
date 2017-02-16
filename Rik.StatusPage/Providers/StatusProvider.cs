@@ -1,25 +1,29 @@
 ﻿using System;
+using Rik.StatusPage.Configuration;
 using Rik.StatusPage.Schema;
 
 namespace Rik.StatusPage.Providers
 {
     public abstract class StatusProvider
     {
-        private readonly string name;
+        protected readonly StatusProviderConfigurationElement configuration;
 
-        protected StatusProvider(string name)
+        protected StatusProvider(StatusProviderConfigurationElement configuration)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Status provider name is required.", nameof(name));
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
 
-            this.name = name;
+            if (string.IsNullOrWhiteSpace(configuration.Name))
+                throw new ArgumentException("Status provider name is required.", nameof(configuration.Name));
+
+            this.configuration = configuration;
         }
 
         protected abstract ExternalUnit OnCheckStatus(ExternalUnit externalUnit);
 
         public virtual ExternalUnit CheckStatus()
         {
-            var externalUnit = new ExternalUnit { Name = name };
+            var externalUnit = new ExternalUnit { Name = configuration.Name };
 
             try
             {

@@ -16,6 +16,8 @@ namespace Rik.StatusPage
 {
     public class StatusHandler : IHttpHandler
     {
+        private static readonly Func<string, StatusProviderConfigurationElement, StatusProvider> statusProviderFactory;
+
         private static readonly Lazy<XmlSerializer> serializer = new Lazy<XmlSerializer>(() => new XmlSerializer(typeof(Application)));
         private static readonly StatusPageConfigurationSection statusPageConfiguration = (StatusPageConfigurationSection)ConfigurationManager.GetSection("rik.statuspage");
 
@@ -35,17 +37,10 @@ namespace Rik.StatusPage
 
         protected virtual Application CollectStatus(HttpContext context)
         {
-            var externalStatusProviders = new List<StatusProvider>();
-
-            foreach (StatusProviderConfigurationElement statusProvider in statusPageConfiguration.StatusProviders)
-            {
-                switch (statusProvider.Type)
-                {
-                    case StatusProviderType.Database:
-                        externalStatusProviders.Add(new DatabaseStatusProvider(statusProvider.Name, statusProvider.ConnectionString, statusProvider.ConnectionType));
-                        break;
-                }
-            }
+            var externalStatusProviders = statusPageConfiguration.StatusProviders
+                .OfType<StatusProviderConfigurationElement>()
+                .Select(x => statusProviderFactory(x.Type, x))
+                .ToList();
 
             var externalUnits = new ConcurrentBag<ExternalUnit>();
 
@@ -87,6 +82,27 @@ namespace Rik.StatusPage
             {
                 Name = runtimeName,
                 Version = Environment.Version.ToString()
+            };
+        }
+
+        static StatusHandler()
+        {
+            var mapping = new Dictionary<string, Type>();
+
+            statusProviderFactory = (name, configuration) =>
+            {
+                Type statusProviderType;
+
+                if (!mapping.TryGetValue(name, out statusProviderType))
+                {
+                    statusProviderType = Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
+                    if (statusProviderType == null || statusProviderType.IsAbstract)
+                        throw new Exception($"Invalid status provider name: {name}.");
+
+                    mapping.Add(name, statusProviderType);
+                }
+
+                return (StatusProvider) Activator.CreateInstance(statusProviderType, configuration);
             };
         }
     }
