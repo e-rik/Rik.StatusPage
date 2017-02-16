@@ -1,5 +1,4 @@
-﻿using System;
-using System.Configuration;
+﻿using System.Configuration;
 
 namespace Rik.StatusPage.Configuration
 {
@@ -7,12 +6,12 @@ namespace Rik.StatusPage.Configuration
     {
         protected override ConfigurationElement CreateNewElement()
         {
-            throw new NotImplementedException();
+            return new StatusProviderConfigurationElement();
         }
 
         protected override object GetElementKey(ConfigurationElement element)
         {
-            throw new NotImplementedException();
+            return ((StatusProviderConfigurationElement) element).Name;
         }
     }
 }
