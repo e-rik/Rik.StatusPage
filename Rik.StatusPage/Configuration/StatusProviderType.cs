@@ -6,6 +6,7 @@
         WebService,
         Xroad,
         FileStorage,
-        Database
+        Database,
+        Custom
     }
 }
