@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration\ApplicationConfigurationElement.cs" />
     <Compile Include="Configuration\StatusPageConfigurationSection.cs" />
     <Compile Include="Configuration\StatusProviderConfigurationCollection.cs" />
     <Compile Include="Configuration\StatusProviderConfigurationElement.cs" />
