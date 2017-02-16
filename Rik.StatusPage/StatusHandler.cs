@@ -34,7 +34,9 @@ namespace Rik.StatusPage
             {
                 Name = statusPageConfiguration.Application.Name,
                 Version = statusPageConfiguration.Application.Version,
-                ServerPlatform = GetServerPlatform(context)
+                Status = UnitStatus.Ok,
+                ServerPlatform = GetServerPlatform(context),
+                RuntimeEnvironment = GetRuntimeEnvironment()
             };
         }
 
@@ -46,6 +48,17 @@ namespace Rik.StatusPage
             {
                 Name = serverSoftware.Length > 0 ? serverSoftware[0] : string.Empty,
                 Version = serverSoftware.Length > 1 ? serverSoftware[1] : string.Empty
+            };
+        }
+
+        private static RuntimeEnvironment GetRuntimeEnvironment()
+        {
+            var runtimeName = Type.GetType("Mono.Runtime") != null ? "Mono" : ".NET";
+
+            return new RuntimeEnvironment
+            {
+                Name = runtimeName,
+                Version = Environment.Version.ToString()
             };
         }
     }
