@@ -5,10 +5,9 @@ namespace Rik.StatusPage.Configuration
     public class StatusPageConfigurationSection : ConfigurationSection
     {
         [ConfigurationProperty("statusProviders", IsRequired = true)]
-        [ConfigurationCollection(typeof(StatusProviderConfigurationCollection), AddItemName = "statusProvider")]
-        public StatusProviderConfigurationCollection StatusProviders => this["statusProviders"] as StatusProviderConfigurationCollection;
+        public StatusProviderConfigurationCollection StatusProviders => (StatusProviderConfigurationCollection) this["statusProviders"];
 
         [ConfigurationProperty("application", IsRequired = true)]
-        public ApplicationConfigurationElement Application => this["application"] as ApplicationConfigurationElement;
+        public ApplicationConfigurationElement Application => (ApplicationConfigurationElement) this["application"];
     }
 }

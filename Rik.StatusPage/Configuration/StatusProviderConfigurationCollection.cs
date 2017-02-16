@@ -2,8 +2,21 @@
 
 namespace Rik.StatusPage.Configuration
 {
+    [ConfigurationCollection(typeof(StatusProviderConfigurationCollection), AddItemName = "statusProvider")]
     public class StatusProviderConfigurationCollection : ConfigurationElementCollection
     {
+        public StatusProviderConfigurationElement this[int index]
+        {
+            get { return BaseGet(index) as StatusProviderConfigurationElement; }
+            set
+            {
+                if (BaseGet(index) != null)
+                    BaseRemoveAt(index);
+
+                BaseAdd(index, value);
+            }
+        }
+
         protected override ConfigurationElement CreateNewElement()
         {
             return new StatusProviderConfigurationElement();

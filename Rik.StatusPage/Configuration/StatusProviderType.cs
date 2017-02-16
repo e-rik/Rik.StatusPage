@@ -2,11 +2,11 @@
 {
     public enum StatusProviderType
     {
-        Service,
-        WebService,
-        Xroad,
+        Custom,
         FileStorage,
         Database,
-        Custom
+        WebService,
+        WindowsService,
+        Xroad
     }
 }
