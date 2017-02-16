@@ -5,7 +5,11 @@ namespace Rik.StatusPage.Configuration
     public class StatusProviderConfigurationElement : ConfigurationElement
     {
         [ConfigurationProperty("name", IsRequired = true)]
-        public string Name => (string) this["name"];
+        public string Name
+        {
+            get { return (string) this["name"]; }
+            set { this["name"] = value; }
+        }
 
         [ConfigurationProperty("type", IsRequired = true)]
         public string Type => (string) this["type"];
@@ -42,12 +46,21 @@ namespace Rik.StatusPage.Configuration
 
                 return rawValue;
             }
+            set { this["storagePath"] = value; }
         }
 
         [ConfigurationProperty("requireRead", IsRequired = false, DefaultValue = false)]
-        public bool RequireRead => (bool) this["requireRead"];
+        public bool RequireRead
+        {
+            get { return (bool) this["requireRead"]; }
+            set { this["requireRead"] = value; }
+        }
 
         [ConfigurationProperty("requireWrite", IsRequired = false, DefaultValue = false)]
-        public bool RequireWrite => (bool) this["requireWrite"];
+        public bool RequireWrite
+        {
+            get { return (bool) this["requireWrite"]; }
+            set { this["requireWrite"] = value; }
+        }
     }
 }
