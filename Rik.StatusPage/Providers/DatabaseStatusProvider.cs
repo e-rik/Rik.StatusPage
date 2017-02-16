@@ -9,6 +9,9 @@ namespace Rik.StatusPage.Providers
         private readonly string connectionString;
         private readonly Type connectionType;
 
+        // MsSql -   SELECT SERVERPROPERTY('productversion'), SERVERPROPERTY('productlevel'), SERVERPROPERTY('edition')
+        // Oracle -  SELECT version FROM V$INSTANCE
+        // Postgre - SELECT version();
         public DatabaseStatusProvider(string name, string connectionString, Type connectionType)
             : base(name)
         {
