@@ -54,11 +54,24 @@ namespace Rik.StatusPage.Providers
 
         private Type GetConnectionType()
         {
-            var type = ConnectionTypeNames.Select(Type.GetType).FirstOrDefault();
+            var type = ConnectionTypeNames.Select(FindType).FirstOrDefault();
             if (type == null)
                 throw new Exception($"Cannot load database connection type: {string.Join(", ", ConnectionTypeNames)}.");
 
             return type;
+        }
+
+        private static Type FindType(string qualifiedName)
+        {
+            var type = Type.GetType(qualifiedName);
+            if (type != null)
+                return type;
+
+            var nameParts = qualifiedName.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
+            if (nameParts.Length < 2)
+                return null;
+
+            return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == nameParts[1].Trim())?.GetType(nameParts[0].Trim());
         }
     }
 }
