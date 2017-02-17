@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -55,7 +56,7 @@ namespace Rik.StatusPage
             return new Application
             {
                 Name = statusPageConfiguration.Application.Name,
-                Version = statusPageConfiguration.Application.Version,
+                Version = GetWebEntryAssembly(context).GetName().Version.ToString(),
                 Status = UnitStatus.Ok,
                 ServerPlatform = GetServerPlatform(context),
                 RuntimeEnvironment = GetRuntimeEnvironment(),
@@ -83,6 +84,19 @@ namespace Rik.StatusPage
                 Name = runtimeName,
                 Version = Environment.Version.ToString()
             };
+        }
+
+        private static Assembly GetWebEntryAssembly(HttpContext context)
+        {
+            if (context?.ApplicationInstance == null)
+                return null;
+
+            var type = context.ApplicationInstance.GetType();
+
+            while (type != null && type.Namespace == "ASP")
+                type = type.BaseType;
+
+            return type == null ? null : type.Assembly;
         }
 
         static StatusHandler()

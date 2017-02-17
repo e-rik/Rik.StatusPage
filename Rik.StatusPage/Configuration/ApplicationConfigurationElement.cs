@@ -6,8 +6,5 @@ namespace Rik.StatusPage.Configuration
     {
         [ConfigurationProperty("name", IsRequired = true)]
         public string Name => (string) this["name"];
-
-        [ConfigurationProperty("version", IsRequired = true)]
-        public string Version => (string) this["version"];
     }
 }
