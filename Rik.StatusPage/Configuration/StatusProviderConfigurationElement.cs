@@ -79,8 +79,8 @@ namespace Rik.StatusPage.Configuration
 
                 if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
                 {
-                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[storagePath];
+                    var securityServer = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[securityServer];
                 }
 
                 return rawValue;
@@ -97,8 +97,8 @@ namespace Rik.StatusPage.Configuration
 
                 if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
                 {
-                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[storagePath];
+                    var producerName = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[producerName];
                 }
 
                 return rawValue;
@@ -115,8 +115,8 @@ namespace Rik.StatusPage.Configuration
 
                 if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
                 {
-                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[storagePath];
+                    var consumer = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[consumer];
                 }
 
                 return rawValue;
@@ -133,13 +133,31 @@ namespace Rik.StatusPage.Configuration
 
                 if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
                 {
-                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[storagePath];
+                    var userId = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[userId];
                 }
 
                 return rawValue;
             }
             set { this["userId"] = value; }
+        }
+
+        [ConfigurationProperty("url", IsRequired = false)]
+        public string Url
+        {
+            get
+            {
+                var rawValue = (string)this["url"];
+
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
+                {
+                    var url = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[url];
+                }
+
+                return rawValue;
+            }
+            set { this["url"] = value; }
         }
     }
 }
