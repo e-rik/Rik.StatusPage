@@ -18,9 +18,9 @@ namespace Rik.StatusPage
     public class StatusHandler : IHttpHandler
     {
         private static readonly Func<string, StatusProviderConfigurationElement, StatusProvider> statusProviderFactory;
-
         private static readonly Lazy<XmlSerializer> serializer = new Lazy<XmlSerializer>(() => new XmlSerializer(typeof(Application)));
-        private static readonly StatusPageConfigurationSection statusPageConfiguration = (StatusPageConfigurationSection)ConfigurationManager.GetSection("rik.statuspage");
+        private static readonly StatusPageConfigurationSection statusPageConfiguration = (StatusPageConfigurationSection) ConfigurationManager.GetSection("rik.statuspage");
+        private static readonly XmlDocument document = new XmlDocument();
 
         public bool IsReusable => false;
 
@@ -61,6 +61,7 @@ namespace Rik.StatusPage
                 ServerPlatform = GetServerPlatform(context),
                 RuntimeEnvironment = GetRuntimeEnvironment(),
                 ExternalDependencies = externalUnits.OrderBy(x => x.Name).ToArray(),
+                AdditionalInfo = GetAdditionalInfo()
             };
         }
 
@@ -97,6 +98,24 @@ namespace Rik.StatusPage
                 type = type.BaseType;
 
             return type == null ? null : type.Assembly;
+        }
+
+        private static XmlElement[] GetAdditionalInfo()
+        {
+            return new[]
+            {
+                CreateElement("application_architecture", "value", Environment.Is64BitProcess ? "64-bit" : "32-bit"),
+                CreateElement("os_version", "value", Environment.OSVersion.ToString()),
+                CreateElement("os_architecture", "value", Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit")
+            };
+        }
+
+        private static XmlElement CreateElement(string name, string attributeName, string attributeValue)
+        {
+            var element = document.CreateElement(name);
+            element.SetAttribute(attributeName, attributeValue);
+
+            return element;
         }
 
         static StatusHandler()
