@@ -53,6 +53,7 @@
     <Compile Include="Providers\OracleDatabaseStatusProvider.cs" />
     <Compile Include="Providers\PostgreDatabaseStatusProvider.cs" />
     <Compile Include="Providers\StatusProvider.cs" />
+    <Compile Include="Providers\XRoadProducerStatusProvider.cs" />
     <Compile Include="Schema\Application.cs" />
     <Compile Include="Schema\ExternalUnit.cs" />
     <Compile Include="Schema\RuntimeEnvironment.cs" />

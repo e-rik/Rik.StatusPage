@@ -62,5 +62,84 @@ namespace Rik.StatusPage.Configuration
             get { return (bool) this["requireWrite"]; }
             set { this["requireWrite"] = value; }
         }
+
+        [ConfigurationProperty("protocol", IsRequired = false)]
+        public string Protocol
+        {
+            get { return (string) this["protocol"]; }
+            set { this["protocol"] = value; }
+        }
+
+        [ConfigurationProperty("securityServer", IsRequired = false)]
+        public string SecurityServer
+        {
+            get
+            {
+                var rawValue = (string)this["securityServer"];
+
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
+                {
+                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[storagePath];
+                }
+
+                return rawValue;
+            }
+            set { this["securityServer"] = value; }
+        }
+
+        [ConfigurationProperty("producerName", IsRequired = false)]
+        public string ProducerName
+        {
+            get
+            {
+                var rawValue = (string)this["producerName"];
+
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
+                {
+                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[storagePath];
+                }
+
+                return rawValue;
+            }
+            set { this["producerName"] = value; }
+        }
+
+        [ConfigurationProperty("consumer", IsRequired = false)]
+        public string Consumer
+        {
+            get
+            {
+                var rawValue = (string)this["consumer"];
+
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
+                {
+                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[storagePath];
+                }
+
+                return rawValue;
+            }
+            set { this["consumer"] = value; }
+        }
+
+        [ConfigurationProperty("userId", IsRequired = false)]
+        public string UserId
+        {
+            get
+            {
+                var rawValue = (string)this["userId"];
+
+                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
+                {
+                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
+                    return ConfigurationManager.AppSettings[storagePath];
+                }
+
+                return rawValue;
+            }
+            set { this["userId"] = value; }
+        }
     }
 }
