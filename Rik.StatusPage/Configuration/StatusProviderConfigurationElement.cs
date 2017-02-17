@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Text.RegularExpressions;
 
 namespace Rik.StatusPage.Configuration
 {
@@ -20,14 +21,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string) this["connectionString"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var connectionString = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[connectionString];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var connectionString = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[connectionString];
             }
         }
 
@@ -37,14 +37,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string) this["storagePath"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var storagePath = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[storagePath];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var storagePath = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[storagePath];
             }
             set { this["storagePath"] = value; }
         }
@@ -76,14 +75,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string)this["securityServer"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var securityServer = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[securityServer];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var securityServer = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[securityServer];
             }
             set { this["securityServer"] = value; }
         }
@@ -94,14 +92,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string)this["producerName"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var producerName = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[producerName];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var producerName = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[producerName];
             }
             set { this["producerName"] = value; }
         }
@@ -112,14 +109,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string)this["consumer"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var consumer = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[consumer];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var consumer = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[consumer];
             }
             set { this["consumer"] = value; }
         }
@@ -130,14 +126,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string)this["userId"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var userId = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[userId];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var userId = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[userId];
             }
             set { this["userId"] = value; }
         }
@@ -148,14 +143,13 @@ namespace Rik.StatusPage.Configuration
             get
             {
                 var rawValue = (string)this["url"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
 
-                if (rawValue.StartsWith("${") && rawValue.EndsWith("}"))
-                {
-                    var url = rawValue.Substring(2, rawValue.Length - 3);
-                    return ConfigurationManager.AppSettings[url];
-                }
+                if (!match.Success)
+                    return rawValue;
 
-                return rawValue;
+                var url = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[url];
             }
             set { this["url"] = value; }
         }
