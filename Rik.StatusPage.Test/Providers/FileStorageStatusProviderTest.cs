@@ -66,7 +66,7 @@ namespace Rik.StatusPage.Test.Providers
             };
         }
 
-        private FileStorageStatusProvider BuildProvider(StatusProviderConfigurationElement element)
+        private static FileStorageStatusProvider BuildProvider(StatusProviderConfigurationElement element)
         {
             return new FileStorageStatusProvider(element);
         }

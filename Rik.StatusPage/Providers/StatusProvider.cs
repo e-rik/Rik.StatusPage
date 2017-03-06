@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Rik.StatusPage.Configuration;
 using Rik.StatusPage.Schema;
 
@@ -33,6 +34,19 @@ namespace Rik.StatusPage.Providers
             {
                 return externalUnit.SetStatus(UnitStatus.NotOk, exception.Message);
             }
+        }
+
+        protected static Type FindType(string qualifiedName)
+        {
+            var type = Type.GetType(qualifiedName);
+            if (type != null)
+                return type;
+
+            var nameParts = qualifiedName.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return nameParts.Length < 2
+                ? null
+                : AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == nameParts[1].Trim())?.GetType(nameParts[0].Trim());
         }
     }
 }

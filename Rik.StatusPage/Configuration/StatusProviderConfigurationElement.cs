@@ -29,6 +29,7 @@ namespace Rik.StatusPage.Configuration
                 var connectionString = match.Groups[1].Value;
                 return ConfigurationManager.AppSettings[connectionString];
             }
+            set { this["connectionString"] = value; }
         }
 
         [ConfigurationProperty("storagePath", IsRequired = false)]
@@ -152,6 +153,23 @@ namespace Rik.StatusPage.Configuration
                 return ConfigurationManager.AppSettings[url];
             }
             set { this["url"] = value; }
+        }
+
+        [ConfigurationProperty("class", IsRequired = false)]
+        public string Class
+        {
+            get
+            {
+                var rawValue = (string)this["class"];
+                var match = Regex.Match(rawValue, "\\${(.*?)}");
+
+                if (!match.Success)
+                    return rawValue;
+
+                var clazz = match.Groups[1].Value;
+                return ConfigurationManager.AppSettings[clazz];
+            }
+            set { this["class"] = value; }
         }
     }
 }

@@ -63,18 +63,5 @@ namespace Rik.StatusPage.Providers
 
             return type;
         }
-
-        private static Type FindType(string qualifiedName)
-        {
-            var type = Type.GetType(qualifiedName);
-            if (type != null)
-                return type;
-
-            var nameParts = qualifiedName.Split(new[] {','}, StringSplitOptions.RemoveEmptyEntries);
-            if (nameParts.Length < 2)
-                return null;
-
-            return AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == nameParts[1].Trim())?.GetType(nameParts[0].Trim());
-        }
     }
 }

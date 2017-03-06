@@ -47,6 +47,7 @@
     <Compile Include="Configuration\StatusProviderConfigurationCollection.cs" />
     <Compile Include="Configuration\StatusProviderConfigurationElement.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\CustomStatusProvider.cs" />
     <Compile Include="Providers\DatabaseStatusProvider.cs" />
     <Compile Include="Providers\FileStorageStatusProvider.cs" />
     <Compile Include="Providers\MsSqlDatabaseStatusProvider.cs" />
