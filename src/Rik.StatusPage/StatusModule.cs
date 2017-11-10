@@ -103,7 +103,8 @@ namespace Rik.StatusPage
 
         public static bool IsStatusPage(HttpContext context)
         {
-            return StatusPath.Equals(context.Request.AppRelativeCurrentExecutionFilePath);
+            var path = context.Request.AppRelativeCurrentExecutionFilePath ?? "";
+            return StatusPath.Equals(path.ToLower());
         }
 
         public static bool IsApplicationStartFailure(HttpApplication application)
