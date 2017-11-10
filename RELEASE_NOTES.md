@@ -1,4 +1,4 @@
-﻿#### 1.0.0 - Unreleased
+﻿#### 1.0.0 - 10.11.2017
 * Initial release
 * Custom status provider
 * File storage status provider
