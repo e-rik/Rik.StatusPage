@@ -148,7 +148,7 @@ Kasutatakse *PostgreSQL* andmebaasi juurdepääsu kontrollimiseks:
 Kasutatakse veebiteenuse juurdepääsu kontrollimiseks (HTTP GET):
 
 ```xml
-<statusProvider name="some important database" type="PostgreDatabase" url="..." />
+<statusProvider name="some important database" type="WebService" url="..." />
 ```
 
 * `url` (kohustuslik parameeter) - veebiteenuse aadress
