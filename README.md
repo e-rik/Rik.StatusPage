@@ -11,50 +11,56 @@ Kasutamine
 
 * Vastavalt IIS-i versioonile seadistada `Web.config` failis `Rik.StatusPage.StatusModule` laiendus.
 
-      <configuration>
-        <system.web>
-          <httpModules>
-            <add name="RikStatusPageModule" type="Rik.StatusPage.StatusModule, Rik.StatusPage" />
-          </httpModules>
-        </system.web>
-      </configuration>
+  ```xml
+  <configuration>
+    <system.web>
+      <httpModules>
+        <add name="RikStatusPageModule" type="Rik.StatusPage.StatusModule, Rik.StatusPage" />
+      </httpModules>
+    </system.web>
+  </configuration>
 
-      <configuration>
-        <system.webServer>
-          <modules>
-            <add name="RikStatusPageModule" type="Rik.StatusPage.StatusModule, Rik.StatusPage" />
-          </modules>
-        </system.webServer>
-      </configuration>
+  <configuration>
+    <system.webServer>
+      <modules>
+        <add name="RikStatusPageModule" type="Rik.StatusPage.StatusModule, Rik.StatusPage" />
+      </modules>
+    </system.webServer>
+  </configuration>
+  ```
 
 * Täiendada `Global.asax.cs` või mujal asuvat globaalset `HttpApplication` objekti laiendavat klassi järgmiselt:
 
     * Mässida `Application_Start` loogika `Rik.StatusPage.StatusModule.CaptureApplicationStartErrors` meetodisse:
 
-          protected void Application_Start()
+      ```csharp
+      protected void Application_Start()
+      {
+          StatusModule.CaptureApplicationStartErrors(this, () =>
           {
-              StatusModule.CaptureApplicationStartErrors(this, () =>
-              {
-                  // For example:
+              // For example:
 
-                  // Register IoC container
+              // Register IoC container
 
-                  AreaRegistration.RegisterAllAreas();
-                  RouteConfig.RegisterRoutes(RouteTable.Routes);
+              AreaRegistration.RegisterAllAreas();
+              RouteConfig.RegisterRoutes(RouteTable.Routes);
 
-                  // Rest of application initialization logic.
-              });
-          }
+              // Rest of application initialization logic.
+          });
+      }
+      ```
 
     * Lisada tingimus `Application_EndRequest` meetodisse:
 
-          protected void Application_EndRequest()
-          {
-              if (StatusModule.IsStatusPage(Context) || StatusModule.IsApplicationStartFailure(this))
-                  return;
+      ```csharp
+      protected void Application_EndRequest()
+      {
+          if (StatusModule.IsStatusPage(Context) || StatusModule.IsApplicationStartFailure(this))
+              return;
 
-              container.GetInstance<ISessionHandler>().CloseSession();
-          }
+          container.GetInstance<ISessionHandler>().CloseSession();
+      }
+      ```
 
 Peale kirjeldatud muudatuste tegemist hakkab rakendus oma seisukorra kohta pakkuma infot asukohas `/status.xml`.
 
@@ -68,23 +74,25 @@ vajadusel defineerida enda omasid koodis. Antud paketi poolt pakutavate *provide
 Välise sõltuvuse kirjeldamiseks tuleb rakenduse `Web.config` failis kirjeldada `rik.statuspage`
 konfiguratsioonisektsioon, sarnaselt alljärgnevale näitele:
 
-    <configuration>
-      <configSections>
-        <section name="rik.statuspage" type="Rik.StatusPage.Configuration.StatusPageConfigurationSection, Rik.StatusPage" />
-      </configSections>
+```xml
+<configuration>
+  <configSections>
+    <section name="rik.statuspage" type="Rik.StatusPage.Configuration.StatusPageConfigurationSection, Rik.StatusPage" />
+  </configSections>
 
-      <appSettings>
-        <add key="Turvaserver.Url" value="http://turvaserv.er/">
-      </appSettings>
+  <appSettings>
+    <add key="Turvaserver.Url" value="http://turvaserv.er/">
+  </appSettings>
 
-      <rik.statuspage>
-        <application name="ApplicationName" />
-        <statusProviders>
-          <statusProvider name="Andmebaas" type="MsSqlDatabase" connectionString="Data Source=..." />
-          <statusProvider name="Turvaserver" type="WebService" url="${Turvaserver.Url}" />
-        </statusProviders>
-      </rik.statuspage>
-    </configuration>
+  <rik.statuspage>
+    <application name="ApplicationName" />
+    <statusProviders>
+      <statusProvider name="Andmebaas" type="MsSqlDatabase" connectionString="Data Source=..." />
+      <statusProvider name="Turvaserver" type="WebService" url="${Turvaserver.Url}" />
+    </statusProviders>
+  </rik.statuspage>
+</configuration>
+```
 
 Nagu näidiselt näha, saab soovi korral *statusProvider* parameetri väärtusena viidata `appSettings` sektsioonis kirjeldatud
 väärtustele nime `key` atribuudi alusel, kasutades `${...}` konstruktsiooni.
@@ -97,7 +105,9 @@ Väliste sõltuvuste *provider*-id
 
 Kasutatakse failikataloogi juurdepääsu kontrollimiseks:
 
-    <statusProvider name="somefile" type="FileStorage" storagePath="C:\Temp" requireRead="true" requireWrite="false" />
+```xml
+<statusProvider name="somefile" type="FileStorage" storagePath="C:\Temp" requireRead="true" requireWrite="false" />
+```
 
 * `storagePath` (kohustuslik parameeter) - failikataloogi asukoht
 * `requireRead` (vaikimisi *false*) - nõuab lugemisõigust
@@ -107,7 +117,9 @@ Kasutatakse failikataloogi juurdepääsu kontrollimiseks:
 
 Kasutatakse *Microsoft Sql Server*-i juurdepääsu kontrollimiseks:
 
-    <statusProvider name="some important database" type="MsSqlDatabase" connectionString="..." />
+```xml
+<statusProvider name="some important database" type="MsSqlDatabase" connectionString="..." />
+```
 
 * `connectionString` (kohustuslik parameeter) - andmebaasi juurdepääsukirjeldus
 
@@ -115,7 +127,9 @@ Kasutatakse *Microsoft Sql Server*-i juurdepääsu kontrollimiseks:
 
 Kasutatakse *Oracle* andmebaasi juurdepääsu kontrollimiseks:
 
-    <statusProvider name="some important database" type="OracleDatabase" connectionString="..." />
+```xml
+<statusProvider name="some important database" type="OracleDatabase" connectionString="..." />
+```
 
 * `connectionString` (kohustuslik parameeter) - andmebaasi juurdepääsukirjeldus
 
@@ -123,7 +137,9 @@ Kasutatakse *Oracle* andmebaasi juurdepääsu kontrollimiseks:
 
 Kasutatakse *PostgreSQL* andmebaasi juurdepääsu kontrollimiseks:
 
-    <statusProvider name="some important database" type="PostgreDatabase" connectionString="..." />
+```xml
+<statusProvider name="some important database" type="PostgreDatabase" connectionString="..." />
+```
 
 * `connectionString` (kohustuslik parameeter) - andmebaasi juurdepääsukirjeldus
 
@@ -131,7 +147,9 @@ Kasutatakse *PostgreSQL* andmebaasi juurdepääsu kontrollimiseks:
 
 Kasutatakse veebiteenuse juurdepääsu kontrollimiseks (HTTP GET):
 
-    <statusProvider name="some important database" type="PostgreDatabase" url="..." />
+```xml
+<statusProvider name="some important database" type="PostgreDatabase" url="..." />
+```
 
 * `url` (kohustuslik parameeter) - veebiteenuse aadress
 
@@ -139,7 +157,9 @@ Kasutatakse veebiteenuse juurdepääsu kontrollimiseks (HTTP GET):
 
 Kasutatakse X-tee andmekogu juurdepääsu kontrollimiseks (getState metateenus):
 
-    <statusProvider name="producer name" type="XRoadProducer" protocol="3.1" securityServer="..." producerName="..." consumer="..." userId="..." />
+```xml
+<statusProvider name="producer name" type="XRoadProducer" protocol="3.1" securityServer="..." producerName="..." consumer="..." userId="..." />
+```
 
 * `protocol` (kohustuslik parameeter) - kasutatav X-tee sõnumivahetuse protokoll (`"2.0"`, `"3.0"`, `"3.1"`, `"4.0"`)
 * `securityServer` (kohustuslik parameeter) - kasutatava turvaserveri url
@@ -151,7 +171,9 @@ Kasutatakse X-tee andmekogu juurdepääsu kontrollimiseks (getState metateenus):
 
 Kasutatakse rakenduse poolt defineeritud *provider*-i kirjeldamiseks:
 
-    <statusProvider name="producer name" type="Custom" class="My.Web.App.RandomStatusProvider, My.Web.App" />
+```xml
+<statusProvider name="producer name" type="Custom" class="My.Web.App.RandomStatusProvider, My.Web.App" />
+```
 
 * `class` (kohustuslik parameeter) - rakenduses kirjeldatud andmetüüp, mis realiseerib soovitud kontrolli.
 
