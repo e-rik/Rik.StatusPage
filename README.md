@@ -172,10 +172,68 @@ Kasutatakse X-tee andmekogu juurdepääsu kontrollimiseks (getState metateenus):
 Kasutatakse rakenduse poolt defineeritud *provider*-i kirjeldamiseks:
 
 ```xml
-<statusProvider name="producer name" type="Custom" class="My.Web.App.RandomStatusProvider, My.Web.App" />
+<statusProvider name="Elastic" type="Custom" class="My.Web.ElasticStatusProvider, My.Web" connectionString="http://elasticserver/" index="indexName" />
 ```
 
 * `class` (kohustuslik parameeter) - rakenduses kirjeldatud andmetüüp, mis realiseerib soovitud kontrolli.
+
+Rakenduse poolt defineeritud *provider* peaks laiendama `Rik.StatusPage.Providers.StatusProvider` klassi, näiteks:
+
+```csharp
+using System;
+using System.Net;
+using Newtonsoft.Json.Linq;
+using Rik.StatusPage.Configuration;
+using Rik.StatusPage.Providers;
+using Rik.StatusPage.Schema;
+using Nest;
+
+namespace My.Web
+{
+    public class ElasticStatusProvider : StatusProvider
+    {
+        private readonly string connectionString;
+        private readonly string index;
+
+        public ElasticStatusProvider(StatusProviderConfigurationElement configuration)
+            : base(configuration)
+        {
+            connectionString = configuration.ConnectionString;
+            if (string.IsNullOrWhiteSpace(connectionString))
+                throw new ArgumentException(@"Elasticsearch ühenduse parameetrid on konfiguratioonifailis määramata.", nameof(connectionString));
+
+            configuration.UnrecognizedAttributes.TryGetValue("index", out string indexValue);
+            index = indexValue.GetAppSettingsOrValue();
+            if (string.IsNullOrWhiteSpace(index))
+                throw new ArgumentException(@"Elasticsearch indeksi nimi on konfiguratioonifailis määramata.", nameof(index));
+        }
+
+        protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
+        {
+            externalUnit.ServerPlatform = new ServerPlatform { Name = "Elasticsearch" };
+
+            externalUnit.Uri = $"{index}@{connectionString}";
+
+            using (var c = new WebClient())
+            {
+                var data = c.DownloadString(connectionString);
+                var json = JObject.Parse(data);
+                var version = json.SelectToken("version.number");
+
+                externalUnit.ServerPlatform.Version = version != null ? (string)version : null;
+            }
+
+            var client = new ElasticClient(new ConnectionSettings(new Uri(connectionString)).DefaultIndex(index).MaximumRetries(3));
+            var response = client.ClusterHealth(x => x.Index(index));
+
+            if (!response.Status.Equals("green") && !response.Status.Equals("yellow"))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "Elasticsearch ei tööta.");
+
+            return externalUnit.SetStatus(UnitStatus.Ok);
+        }
+    }
+}
+```
 
 ### SinuEndaKlots
 

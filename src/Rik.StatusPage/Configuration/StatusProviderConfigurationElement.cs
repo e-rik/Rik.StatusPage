@@ -1,9 +1,12 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
 
 namespace Rik.StatusPage.Configuration
 {
     public class StatusProviderConfigurationElement : ConfigurationElement
     {
+        public readonly IDictionary<string, string> UnrecognizedAttributes = new Dictionary<string, string>();
+
         [ConfigurationProperty("name", IsRequired = true)]
         public string Name
         {
@@ -12,7 +15,7 @@ namespace Rik.StatusPage.Configuration
         }
 
         [ConfigurationProperty("type", IsRequired = true)]
-        public string Type => (string) this["type"];
+        public string Type => (string)this["type"];
 
         [ConfigurationProperty("connectionString", IsRequired = false)]
         public string ConnectionString
@@ -89,6 +92,12 @@ namespace Rik.StatusPage.Configuration
         {
             get => ((string)this["class"]).GetAppSettingsOrValue();
             set => this["class"] = value;
+        }
+
+        protected override bool OnDeserializeUnrecognizedAttribute(string name, string value)
+        {
+            UnrecognizedAttributes.Add(name, value);
+            return true;
         }
     }
 }

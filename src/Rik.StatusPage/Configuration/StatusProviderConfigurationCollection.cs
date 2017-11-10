@@ -7,7 +7,7 @@ namespace Rik.StatusPage.Configuration
     {
         public StatusProviderConfigurationElement this[int index]
         {
-            get { return BaseGet(index) as StatusProviderConfigurationElement; }
+            get => BaseGet(index) as StatusProviderConfigurationElement;
             set
             {
                 if (BaseGet(index) != null)
