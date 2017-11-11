@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Net;
 using System.Reflection.Emit;
 using Rik.StatusPage.Configuration;
@@ -66,7 +67,8 @@ namespace Rik.StatusPage.Providers
 
             var vhostConstructor = vhostType.GetConstructor(new Type[0]);
 
-            var isMono = Type.GetType("Mono.Runtime") != null;
+            //var isMono = Type.GetType("Mono.Runtime") != null;
+            const bool isMono = false;
 
             var method = new DynamicMethod("RabbitMqStatusProvider_IsAlive", typeof(bool), new [] { typeof(Uri), typeof(string), typeof(string), typeof(string).MakeByRefType() });
 
@@ -77,7 +79,12 @@ namespace Rik.StatusPage.Providers
             il.Emit(OpCodes.Ldnull);
             il.Emit(OpCodes.Stind_Ref);
 
-            // var management = new ManagementClient(uri.Host, user, password, uri.Port, isMono, null, null, false);
+            // TimeSpan? timeSpan = null;
+            var timeSpan = il.DeclareLocal(typeof(TimeSpan?));
+            il.Emit(OpCodes.Ldloca, timeSpan);
+            il.Emit(OpCodes.Initobj, timeSpan.LocalType);
+
+            // var management = new ManagementClient(uri.Host, user, password, uri.Port, isMono, timeSpan, null, false);
             var management = il.DeclareLocal(clientType);
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Host").GetGetMethod());
@@ -86,7 +93,7 @@ namespace Rik.StatusPage.Providers
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Port").GetGetMethod());
             il.Emit(isMono ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
-            il.Emit(OpCodes.Newobj, typeof(TimeSpan?));
+            il.Emit(OpCodes.Ldloc, timeSpan);
             il.Emit(OpCodes.Ldnull);
             il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Newobj, clientConstructor);
