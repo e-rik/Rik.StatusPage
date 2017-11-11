@@ -68,7 +68,7 @@ namespace Rik.StatusPage.Providers
 
             var isMono = Type.GetType("Mono.Runtime") != null;
 
-            var method = new DynamicMethod("RabbitMqStatusProvider_IsAlive", typeof(bool), new [] { typeof(Uri), typeof(string), typeof(string), typeof(string) });
+            var method = new DynamicMethod("RabbitMqStatusProvider_IsAlive", typeof(bool), new [] { typeof(Uri), typeof(string), typeof(string), typeof(string).MakeByRefType() });
 
             var il = method.GetILGenerator();
 
@@ -86,7 +86,7 @@ namespace Rik.StatusPage.Providers
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Port").GetGetMethod());
             il.Emit(isMono ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
-            il.Emit(OpCodes.Ldnull);
+            il.Emit(OpCodes.Newobj, typeof(TimeSpan?));
             il.Emit(OpCodes.Ldnull);
             il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Newobj, clientConstructor);
@@ -112,10 +112,17 @@ namespace Rik.StatusPage.Providers
             il.Emit(OpCodes.Callvirt, clientType.GetMethod("IsAlive", new[] { vhostType }));
             il.Emit(OpCodes.Brfalse, returnFalseLabel);
 
+            var getLengthsCriteriaType =
+                FindType("EasyNetQ.Management.Client.Model.GetLengthsCriteria, EasyNetQ.Management.Client");
+            var getRatesCriteriaType =
+                FindType("EasyNetQ.Management.Client.Model.GetRatesCriteria, EasyNetQ.Management.Client");
+
             // version = management.GetOverview().RabbitmqVersion;
             il.Emit(OpCodes.Ldarg_3);
             il.Emit(OpCodes.Ldloc, management);
-            il.Emit(OpCodes.Callvirt, clientType.GetMethod("GetOverview", new Type[0]));
+            il.Emit(OpCodes.Ldnull);
+            il.Emit(OpCodes.Ldnull);
+            il.Emit(OpCodes.Callvirt, clientType.GetMethod("GetOverview", new[] { getLengthsCriteriaType, getRatesCriteriaType}));
             il.Emit(OpCodes.Callvirt, overviewType.GetProperty("RabbitmqVersion").GetGetMethod());
             il.Emit(OpCodes.Stind_Ref);
             il.Emit(OpCodes.Ldc_I4_1);

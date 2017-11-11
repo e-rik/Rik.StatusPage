@@ -13,6 +13,11 @@ namespace Rik.StatusPage.Providers
         protected override string VersionQuery { get; } = "SELECT SERVERPROPERTY('productversion'), SERVERPROPERTY('productlevel'), SERVERPROPERTY('edition')";
         protected override string PlatformName { get; } = "Microsoft SQL Server";
 
+        protected override string GetDatabaseUri()
+        {
+            return "";
+        }
+
         public MsSqlDatabaseStatusProvider(StatusProviderConfigurationElement configuration)
             : base(configuration)
         { }
