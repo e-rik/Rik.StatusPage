@@ -1,4 +1,8 @@
-﻿#### 1.0.0 - 10.11.2017
+﻿#### 1.0.1 - Unreleased
+* RabbitMQ status provider
+* Uri value from configuration
+
+#### 1.0.0 - 10.11.2017
 * Initial release
 * Custom status provider
 * File storage status provider

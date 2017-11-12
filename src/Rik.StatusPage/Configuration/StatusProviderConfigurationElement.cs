@@ -94,6 +94,13 @@ namespace Rik.StatusPage.Configuration
             set => this["class"] = value;
         }
 
+        [ConfigurationProperty("uri", IsRequired = false)]
+        public string Uri
+        {
+            get => ((string)this["uri"]).GetAppSettingsOrValue();
+            set => this["uri"] = value;
+        }
+
         protected override bool OnDeserializeUnrecognizedAttribute(string name, string value)
         {
             UnrecognizedAttributes.Add(name, value);

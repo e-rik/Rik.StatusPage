@@ -24,7 +24,11 @@ namespace Rik.StatusPage.Providers
 
         public virtual ExternalUnit CheckStatus()
         {
-            var externalUnit = new ExternalUnit { Name = configuration.Name };
+            var externalUnit = new ExternalUnit
+            {
+                Name = configuration.Name,
+                Uri = configuration.Uri ?? ""
+            };
 
             try
             {

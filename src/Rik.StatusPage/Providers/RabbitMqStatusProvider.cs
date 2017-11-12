@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Net;
 using System.Reflection.Emit;
 using Rik.StatusPage.Configuration;
@@ -68,7 +67,6 @@ namespace Rik.StatusPage.Providers
             var vhostConstructor = vhostType.GetConstructor(new Type[0]);
 
             //var isMono = Type.GetType("Mono.Runtime") != null;
-            const bool isMono = false;
 
             var method = new DynamicMethod("RabbitMqStatusProvider_IsAlive", typeof(bool), new [] { typeof(Uri), typeof(string), typeof(string), typeof(string).MakeByRefType() });
 
@@ -92,7 +90,8 @@ namespace Rik.StatusPage.Providers
             il.Emit(OpCodes.Ldarg_2);
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Port").GetGetMethod());
-            il.Emit(isMono ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+            //il.Emit(isMono ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
+            il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Ldloc, timeSpan);
             il.Emit(OpCodes.Ldnull);
             il.Emit(OpCodes.Ldc_I4_0);

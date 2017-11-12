@@ -15,13 +15,14 @@ namespace Rik.StatusPage.Test.Providers
             var configuration = new StatusProviderConfigurationElement { Name = "Rabbit MQ Status" };
 
             var exception = Assert.Throws<ArgumentException>(
+                // ReSharper disable once ObjectCreationAsStatement
                 () => { new RabbitMqStatusProvider(configuration); }
             );
             
             Assert.IsNotNull(exception);
             StringAssert.StartsWith("RabbitMQ connection string is required.", exception.Message);
         }
-        
+
         [Test]
         public void CheckStatusTest()
         {
@@ -30,11 +31,11 @@ namespace Rik.StatusPage.Test.Providers
                 Name = "Rabbit MQ Status",
                 ConnectionString = "amqp://test:test@test.test:15672/"
             };
-            
+
             var statusProvider = new RabbitMqStatusProvider(configuration);
 
             var externalUnit = statusProvider.CheckStatus();
-            
+
             Assert.IsNotNull(externalUnit);
             Assert.AreEqual(externalUnit.Uri, "amqp://test.test:15672/");
             Assert.AreEqual(externalUnit.Name, "Rabbit MQ Status");
