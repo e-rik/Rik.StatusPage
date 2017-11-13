@@ -1,6 +1,9 @@
-﻿#### 1.0.1 - Unreleased
+﻿#### 1.0.1 - 13.11.2017
 * RabbitMQ status provider
 * Uri value from configuration
+* Version value for app from configuration
+* Custom child elements for app configration
+* Refactor provider configuration
 
 #### 1.0.0 - 10.11.2017
 * Initial release

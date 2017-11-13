@@ -2,7 +2,7 @@
 
 namespace Rik.StatusPage.Configuration
 {
-    [ConfigurationCollection(typeof(StatusProviderConfigurationCollection), AddItemName = "statusProvider")]
+    [ConfigurationCollection(typeof(StatusProviderConfigurationCollection), AddItemName = "unit")]
     public class StatusProviderConfigurationCollection : ConfigurationElementCollection
     {
         public StatusProviderConfigurationElement this[int index]

@@ -52,5 +52,10 @@ namespace Rik.StatusPage.Providers
                 : AppDomain.CurrentDomain.GetAssemblies()
                     .FirstOrDefault(a => a.GetName().Name == nameParts[1].Trim())?.GetType(nameParts[0].Trim());
         }
+
+        protected static Type FindTypeOrFailWith(string qualifiedName, string message)
+        {
+            return FindType(qualifiedName) ?? throw new Exception(message);
+        }
     }
 }

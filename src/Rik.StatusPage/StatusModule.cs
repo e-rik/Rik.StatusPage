@@ -73,7 +73,7 @@ namespace Rik.StatusPage
             var externalStatusProviders =
                 statusPageConfiguration?.StatusProviders
                     .OfType<StatusProviderConfigurationElement>()
-                    .Select(x => statusProviderFactory(x.Type, x))
+                    .Select(x => statusProviderFactory(x.Provider, x))
                     .ToList()
                 ?? new List<StatusProvider>();
 
@@ -89,10 +89,13 @@ namespace Rik.StatusPage
                     externalUnits.Add(status);
             });
 
+            var name = statusPageConfiguration?.Application.Name;
+            var version = statusPageConfiguration?.Application.Version;
+
             return new Application
             {
-                Name = statusPageConfiguration?.Application.Name ?? assemblyName.Name,
-                Version = assemblyName.Version.ToString(),
+                Name = string.IsNullOrWhiteSpace(name) ? assemblyName.Name : name,
+                Version = string.IsNullOrWhiteSpace(version) ? assemblyName.Version.ToString() : version,
                 Status = applicationStatus,
                 ServerPlatform = GetServerPlatform(context),
                 RuntimeEnvironment = GetRuntimeEnvironment(),
@@ -161,12 +164,19 @@ namespace Rik.StatusPage
 
         private static XmlElement[] GetAdditionalInfo()
         {
-            return new[]
+            var additionalInfo = new List<XmlElement>();
+
+            additionalInfo.AddRange(new[]
             {
                 CreateElement("application_architecture", "value", Environment.Is64BitProcess ? "64-bit" : "32-bit"),
                 CreateElement("os_version", "value", Environment.OSVersion.ToString()),
                 CreateElement("os_architecture", "value", Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit")
-            };
+            });
+
+            if (statusPageConfiguration.Application?.UnrecognizedElements.Any() == true)
+                additionalInfo.AddRange(statusPageConfiguration.Application.UnrecognizedElements);
+
+            return additionalInfo.ToArray();
         }
 
         private static XmlElement CreateElement(string name, string attributeName, string attributeValue)

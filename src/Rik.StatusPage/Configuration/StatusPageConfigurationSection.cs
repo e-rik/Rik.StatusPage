@@ -4,10 +4,10 @@ namespace Rik.StatusPage.Configuration
 {
     public class StatusPageConfigurationSection : ConfigurationSection
     {
-        [ConfigurationProperty("statusProviders", IsRequired = true)]
-        public StatusProviderConfigurationCollection StatusProviders => (StatusProviderConfigurationCollection) this["statusProviders"];
+        [ConfigurationProperty("externalDependencies", IsRequired = false)]
+        public StatusProviderConfigurationCollection StatusProviders => (StatusProviderConfigurationCollection) this["externalDependencies"];
 
-        [ConfigurationProperty("application", IsRequired = true)]
-        public ApplicationConfigurationElement Application => (ApplicationConfigurationElement) this["application"];
+        [ConfigurationProperty("app", IsRequired = false)]
+        public ApplicationConfigurationElement Application => (ApplicationConfigurationElement)this["app"];
     }
 }

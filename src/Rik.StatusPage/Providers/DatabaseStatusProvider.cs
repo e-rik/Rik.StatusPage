@@ -9,6 +9,8 @@ namespace Rik.StatusPage.Providers
 {
     public abstract class DatabaseStatusProvider : StatusProvider
     {
+        protected delegate string GetDatabaseUriDelegate(string connectionString);
+
         private readonly Type connectionType;
 
         protected abstract IEnumerable<string> ConnectionTypeNames { get; }

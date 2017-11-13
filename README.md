@@ -85,11 +85,11 @@ konfiguratsioonisektsioon, sarnaselt alljärgnevale näitele:
   </appSettings>
 
   <rik.statuspage>
-    <application name="ApplicationName" />
-    <statusProviders>
-      <statusProvider name="Andmebaas" type="MsSqlDatabase" connectionString="Data Source=..." />
-      <statusProvider name="Turvaserver" type="WebService" url="${Turvaserver.Url}" />
-    </statusProviders>
+    <app name="ApplicationName" />
+    <externalDependencies>
+      <unit name="Andmebaas" provider="MsSqlDatabase" connectionString="Data Source=..." />
+      <unit name="Turvaserver" provider="WebService" url="${Turvaserver.Url}" />
+    </externalDependencies>
   </rik.statuspage>
 </configuration>
 ```
@@ -97,6 +97,42 @@ konfiguratsioonisektsioon, sarnaselt alljärgnevale näitele:
 Nagu näidiselt näha, saab soovi korral *statusProvider* parameetri väärtusena viidata `appSettings` sektsioonis kirjeldatud
 väärtustele nime `key` atribuudi alusel, kasutades `${...}` konstruktsiooni.
 
+### rik.statuspage sektsioon
+
+Võimaldab soovi korral kasutada kahte alamelementi `app` ja `externalDependencies` staatuslehe seadistamiseks.
+
+#### app
+
+```xml
+<rik.statuspage>
+  <app name="Minu rakendus" version="3.0.1-beta001">
+    <oluline-info>Oluline info staatuslehele</oluline-info>
+  </app>
+</rik.statuspage>
+```
+
+* `name` (atribuut) - Rakenduse nime seadistamiseks staatuselehe (vaikimisi rakenduse *assembly* nimi).
+* `version` (atribuut) - Rakenduse versioon (vaikimisi rakenduse *assembly* versiooni number).
+* Alamelemendid lisatakse muutmata kujul automaatselt staatuslehe `app` elemendile.
+
+#### externalDependencies
+
+Alamelementide loend kirjeldab ära väliste sõltuvuste üksused, mida saab seadistada järgmises lõigus kirjeldatud
+*provider*-ite alusel.
+
+```xml
+<rik.statuspage>
+  <externalDependencies>
+    <unit name="Suvaline" provider="PostgreDatabase" uri="psql://host/db" connectionString=".." />
+  </externalDependencies>
+</rik.statuspage>
+```
+
+Üldised atribuudid:
+
+* `name` (kohustuslik) - välise üksuse nimi staatuslehel.
+* `provider` (kohustuslik) - *provider*-i nimi, mis vahendab üksuse staatuse kontrollimist.
+* `uri` - võimaldab soovi korral üksuse `uri` elemendi väärtuse määramist, kui automaatne väärtus ei kata rakenduse vajadusi.
 
 Väliste sõltuvuste *provider*-id
 --------------------------------
@@ -106,7 +142,7 @@ Väliste sõltuvuste *provider*-id
 Kasutatakse failikataloogi juurdepääsu kontrollimiseks:
 
 ```xml
-<statusProvider name="somefile" type="FileStorage" storagePath="C:\Temp" requireRead="true" requireWrite="false" />
+<unit name="somefile" provider="FileStorage" storagePath="C:\Temp" requireRead="true" requireWrite="false" />
 ```
 
 * `storagePath` (kohustuslik parameeter) - failikataloogi asukoht
@@ -118,7 +154,7 @@ Kasutatakse failikataloogi juurdepääsu kontrollimiseks:
 Kasutatakse *Microsoft Sql Server*-i juurdepääsu kontrollimiseks:
 
 ```xml
-<statusProvider name="some important database" type="MsSqlDatabase" connectionString="..." />
+<unit name="some important database" provider="MsSqlDatabase" connectionString="..." />
 ```
 
 * `connectionString` (kohustuslik parameeter) - andmebaasi juurdepääsukirjeldus
@@ -128,7 +164,7 @@ Kasutatakse *Microsoft Sql Server*-i juurdepääsu kontrollimiseks:
 Kasutatakse *Oracle* andmebaasi juurdepääsu kontrollimiseks:
 
 ```xml
-<statusProvider name="some important database" type="OracleDatabase" connectionString="..." />
+<unit name="some important database" provider="OracleDatabase" connectionString="..." />
 ```
 
 * `connectionString` (kohustuslik parameeter) - andmebaasi juurdepääsukirjeldus
@@ -138,17 +174,28 @@ Kasutatakse *Oracle* andmebaasi juurdepääsu kontrollimiseks:
 Kasutatakse *PostgreSQL* andmebaasi juurdepääsu kontrollimiseks:
 
 ```xml
-<statusProvider name="some important database" type="PostgreDatabase" connectionString="..." />
+<unit name="some important database" provider="PostgreDatabase" connectionString="..." />
 ```
 
 * `connectionString` (kohustuslik parameeter) - andmebaasi juurdepääsukirjeldus
+
+### RabbitMq
+
+Kasutatakse *Rabbit MQ* juurdepääsu ja staatuse kontrollimiseks. Eeldab, et rakendusele on lisatud viide
+`EasyNetQ.Management.Client` paketile.
+
+```xml
+<unit name="Minu jänesed" provider="RabbitMq" connectionString="amqp://user:pass@server" />
+```
+
+* `connectionString` (kohustuslik parameeter) - *Rabbit MQ* juurdepääsukirjeldus
 
 ### WebService
 
 Kasutatakse veebiteenuse juurdepääsu kontrollimiseks (HTTP GET):
 
 ```xml
-<statusProvider name="some important database" type="WebService" url="..." />
+<unit name="some important database" provider="WebService" url="..." />
 ```
 
 * `url` (kohustuslik parameeter) - veebiteenuse aadress
@@ -158,7 +205,7 @@ Kasutatakse veebiteenuse juurdepääsu kontrollimiseks (HTTP GET):
 Kasutatakse X-tee andmekogu juurdepääsu kontrollimiseks (getState metateenus):
 
 ```xml
-<statusProvider name="producer name" type="XRoadProducer" protocol="3.1" securityServer="..." producerName="..." consumer="..." userId="..." />
+<unit name="producer name" provider="XRoadProducer" protocol="3.1" securityServer="..." producerName="..." consumer="..." userId="..." />
 ```
 
 * `protocol` (kohustuslik parameeter) - kasutatav X-tee sõnumivahetuse protokoll (`"2.0"`, `"3.0"`, `"3.1"`, `"4.0"`)
@@ -172,7 +219,7 @@ Kasutatakse X-tee andmekogu juurdepääsu kontrollimiseks (getState metateenus):
 Kasutatakse rakenduse poolt defineeritud *provider*-i kirjeldamiseks:
 
 ```xml
-<statusProvider name="Elastic" type="Custom" class="My.Web.ElasticStatusProvider, My.Web" connectionString="http://elasticserver/" index="indexName" />
+<unit name="Elastic" provider="Custom" class="My.Web.ElasticStatusProvider, My.Web" connectionString="http://elasticserver/" index="indexName" />
 ```
 
 * `class` (kohustuslik parameeter) - rakenduses kirjeldatud andmetüüp, mis realiseerib soovitud kontrolli.
@@ -208,11 +255,11 @@ namespace My.Web
                 throw new ArgumentException(@"Elasticsearch indeksi nimi on konfiguratioonifailis määramata.", nameof(index));
         }
 
+        protected override string GetUri() => $"{index}@{connectionString}";
+
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
             externalUnit.ServerPlatform = new ServerPlatform { Name = "Elasticsearch" };
-
-            externalUnit.Uri = $"{index}@{connectionString}";
 
             using (var c = new WebClient())
             {

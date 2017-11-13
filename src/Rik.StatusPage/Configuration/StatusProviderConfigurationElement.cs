@@ -14,8 +14,8 @@ namespace Rik.StatusPage.Configuration
             set => this["name"] = value;
         }
 
-        [ConfigurationProperty("type", IsRequired = true)]
-        public string Type => (string)this["type"];
+        [ConfigurationProperty("provider", IsRequired = true)]
+        public string Provider => (string)this["provider"];
 
         [ConfigurationProperty("connectionString", IsRequired = false)]
         public string ConnectionString
@@ -48,7 +48,7 @@ namespace Rik.StatusPage.Configuration
         [ConfigurationProperty("protocol", IsRequired = false)]
         public string Protocol
         {
-            get => (string)this["protocol"];
+            get => ((string)this["protocol"]).GetAppSettingsOrValue();
             set => this["protocol"] = value;
         }
 
