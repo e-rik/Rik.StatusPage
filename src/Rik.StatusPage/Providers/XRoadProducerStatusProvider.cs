@@ -54,10 +54,14 @@ namespace Rik.StatusPage.Providers
             userId = configuration.UserId;
         }
 
+        protected override string GetUri()
+        {
+            return $"{producerName}@{securityServer}";
+        }
+
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
             externalUnit.ServerPlatform = new ServerPlatform { Name = "X-Road" };
-            externalUnit.Uri = $"{producerName}@{securityServer}";
 
             var statusCode = GetStatusCode();
 

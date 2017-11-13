@@ -23,16 +23,18 @@ namespace Rik.StatusPage.Providers
             connectionString = configuration.ConnectionString;
         }
 
+        protected override string GetUri()
+        {
+            return Uri.TryCreate(connectionString, UriKind.Absolute, out var uri)
+                ? new UriBuilder(uri.Scheme, uri.Host, uri.Port, uri.AbsolutePath, uri.Fragment).ToString()
+                : string.Empty;
+        }
+
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
             externalUnit.ServerPlatform = new ServerPlatform { Name = "RabbitMQ" };
 
-            if (Uri.TryCreate(connectionString, UriKind.Absolute, out var uri))
-            {
-                var fixedUri = new UriBuilder(uri.Scheme, uri.Host, uri.Port, uri.AbsolutePath, uri.Fragment);
-                externalUnit.Uri = fixedUri.ToString();
-            }
-            else externalUnit.Uri = string.Empty;
+            var uri = new Uri(connectionString, UriKind.Absolute);
 
             var userInfo = uri.UserInfo.Split(new[] { ':' }, 2, StringSplitOptions.None);
             var user = userInfo.Length > 0 ? userInfo[0] : "";
@@ -82,14 +84,27 @@ namespace Rik.StatusPage.Providers
             il.Emit(OpCodes.Ldloca, timeSpan);
             il.Emit(OpCodes.Initobj, timeSpan.LocalType);
 
+            // int port = uri.Port;
+            var port = il.DeclareLocal(typeof(int));
+            var portLabel = il.DefineLabel();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Port").GetGetMethod());
+            il.Emit(OpCodes.Stloc, port);
+            il.Emit(OpCodes.Ldloc, port);
+            il.Emit(OpCodes.Ldc_I4_0);
+            il.Emit(OpCodes.Bge, portLabel);
+            il.Emit(OpCodes.Ldc_I4, 15672);
+            il.Emit(OpCodes.Stloc, port);
+            il.MarkLabel(portLabel);
+            il.Emit(OpCodes.Nop);
+
             // var management = new ManagementClient(uri.Host, user, password, uri.Port, isMono, timeSpan, null, false);
             var management = il.DeclareLocal(clientType);
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Host").GetGetMethod());
             il.Emit(OpCodes.Ldarg_1);
             il.Emit(OpCodes.Ldarg_2);
-            il.Emit(OpCodes.Ldarg_0);
-            il.Emit(OpCodes.Callvirt, typeof(Uri).GetProperty("Port").GetGetMethod());
+            il.Emit(OpCodes.Ldloc, port);
             //il.Emit(isMono ? OpCodes.Ldc_I4_1 : OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Ldloc, timeSpan);

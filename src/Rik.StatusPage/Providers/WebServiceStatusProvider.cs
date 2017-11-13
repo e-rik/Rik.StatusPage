@@ -18,10 +18,13 @@ namespace Rik.StatusPage.Providers
             url = configuration.Url;
         }
 
+        protected override string GetUri()
+        {
+            return url;
+        }
+
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
-            externalUnit.Uri = url;
-
             var request = (HttpWebRequest)WebRequest.Create(url);
 
             request.Method = "GET";

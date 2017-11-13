@@ -15,6 +15,8 @@ namespace Rik.StatusPage.Providers
         private readonly bool requireRead;
         private readonly bool requireWrite;
 
+        protected override string GetUri() => storagePath;
+
         public FileStorageStatusProvider(StatusProviderConfigurationElement configuration)
             : base(configuration)
         {
@@ -28,8 +30,6 @@ namespace Rik.StatusPage.Providers
 
         protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
-            externalUnit.Uri = storagePath;
-
             if (!Directory.Exists(storagePath))
                 return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't exist or is not accessible.");
 

@@ -20,18 +20,18 @@ namespace Rik.StatusPage.Providers
             this.configuration = configuration;
         }
 
+        protected virtual string GetUri() => "";
+
         protected abstract ExternalUnit OnCheckStatus(ExternalUnit externalUnit);
 
         public virtual ExternalUnit CheckStatus()
         {
-            var externalUnit = new ExternalUnit
-            {
-                Name = configuration.Name,
-                Uri = configuration.Uri ?? ""
-            };
+            var externalUnit = new ExternalUnit { Name = configuration.Name };
 
             try
             {
+                externalUnit.Uri = string.IsNullOrWhiteSpace(configuration.Uri) ? GetUri() : configuration.Uri;
+
                 return OnCheckStatus(externalUnit);
             }
             catch (Exception exception)

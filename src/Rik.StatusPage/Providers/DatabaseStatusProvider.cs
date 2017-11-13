@@ -9,15 +9,11 @@ namespace Rik.StatusPage.Providers
 {
     public abstract class DatabaseStatusProvider : StatusProvider
     {
-        protected delegate string GetDatabaseUriDelegate(string connectionString);
-
         private readonly Type connectionType;
 
         protected abstract IEnumerable<string> ConnectionTypeNames { get; }
         protected abstract string VersionQuery { get; }
         protected abstract string PlatformName { get; }
-
-        protected abstract string GetDatabaseUri();
 
         protected DatabaseStatusProvider(StatusProviderConfigurationElement configuration)
             : base(configuration)
@@ -37,8 +33,6 @@ namespace Rik.StatusPage.Providers
                 using (var command = connection.CreateCommand())
                 {
                     command.CommandText = VersionQuery;
-
-                    externalUnit.Uri = GetDatabaseUri();
 
                     externalUnit.ServerPlatform = new ServerPlatform
                     {
