@@ -9,6 +9,9 @@ namespace Rik.StatusPage.Configuration
 
         public static string GetAppSettingsOrValue(this string configurationValue)
         {
+            if (configurationValue == null)
+                return null;
+
             var match = appSettingsReferencePattern.Match(configurationValue);
 
             if (!match.Success)
