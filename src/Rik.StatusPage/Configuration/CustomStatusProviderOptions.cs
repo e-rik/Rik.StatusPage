@@ -6,5 +6,9 @@ namespace Rik.StatusPage.Configuration
     {
         public string Class { get; set; }
         public IDictionary<string, string> OtherOptions { get; set; }
+
+        public CustomStatusProviderOptions(string name)
+            : base(name)
+        { }
     }
 }

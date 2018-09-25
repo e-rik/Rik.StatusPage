@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -50,25 +49,25 @@ namespace Rik.StatusPage
             var isApplicationStartFailure = IsApplicationStartFailure(application);
 
             if (IsStatusPage(application.Context))
-                WriteStatusPage(application.Context, isApplicationStartFailure ? UnitStatus.NotOk : UnitStatus.Ok);
+                WriteStatusPageAsync(application.Context, isApplicationStartFailure ? UnitStatus.NotOk : UnitStatus.Ok).ConfigureAwait(false).GetAwaiter().GetResult();
 
             if (isApplicationStartFailure)
                 HttpRuntime.UnloadAppDomain();
         }
 
-        private static void WriteStatusPage(HttpContext context, UnitStatus applicationStatus)
+        private static async Task WriteStatusPageAsync(HttpContext context, UnitStatus applicationStatus)
         {
             context.Response.Clear();
             context.Response.ContentType = "text/xml";
             context.Response.ContentEncoding = Encoding.UTF8;
 
-            var application = CollectStatus(context, applicationStatus);
+            var application = await CollectStatusAsync(context, applicationStatus);
 
             using (context.Response.Output)
                 serializer.Value.Serialize(context.Response.Output, application, new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") }));
         }
 
-        private static Application CollectStatus(HttpContext context, UnitStatus applicationStatus)
+        private static async Task<Application> CollectStatusAsync(HttpContext context, UnitStatus applicationStatus)
         {
             var externalStatusProviders =
                 statusPageConfiguration?.StatusProviders
@@ -79,15 +78,8 @@ namespace Rik.StatusPage
 
             var assemblyName = GetWebEntryAssembly(context).GetName();
 
-            var externalUnits = new ConcurrentBag<ExternalUnit>();
-
-            Parallel.ForEach(externalStatusProviders, async p =>
-            {
-                var status = await p.CheckStatusAsync();
-
-                if (status != null)
-                    externalUnits.Add(status);
-            });
+            var checkStatusTasks = externalStatusProviders.Select(p => p.CheckStatusAsync());
+            var externalUnits = await Task.WhenAll(checkStatusTasks);
 
             var name = statusPageConfiguration?.Application.Name;
             var version = statusPageConfiguration?.Application.Version;
@@ -194,7 +186,7 @@ namespace Rik.StatusPage
             statusProviderFactory = (name, configuration) =>
             {
                 if (mapping.TryGetValue(name, out var statusProviderType))
-                    return (IStatusProvider) Activator.CreateInstance(statusProviderType, configuration);
+                    return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
 
                 statusProviderType = Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
                 if (statusProviderType == null || statusProviderType.IsAbstract)
@@ -202,8 +194,28 @@ namespace Rik.StatusPage
 
                 mapping.Add(name, statusProviderType);
 
-                return (IStatusProvider)Activator.CreateInstance(statusProviderType, configuration);
+                return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
             };
+        }
+
+        private static StatusProviderOptions InitializeStatusProviderOptions(Type statusProviderType, StatusProviderConfigurationElement configurationElement)
+        {
+            var genericType = statusProviderType;
+            while (genericType != null && (!genericType.IsGenericType || genericType.GetGenericTypeDefinition() != typeof(StatusProvider<>)))
+                genericType = genericType.BaseType;
+
+            if (genericType == null)
+                throw new ArgumentException($"Status provider `{statusProviderType.FullName}` does not extend Rik.StatusPage.Providers.StatusProvider<> class.", nameof(statusProviderType));
+
+            var optionsType = genericType.GetGenericArguments().Single();
+            var options = (StatusProviderOptions)Activator.CreateInstance(optionsType, configurationElement.Name);
+
+            var attributes = configurationElement.UnrecognizedAttributes.ToDictionary(x => x.Key.ToLower(), x => x.Value);
+            foreach (var propertyInfo in optionsType.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanWrite))
+                if (attributes.ContainsKey(propertyInfo.Name.ToLower()))
+                    propertyInfo.SetValue(options, Convert.ChangeType(attributes[propertyInfo.Name.ToLower()], propertyInfo.PropertyType));
+
+            return options;
         }
     }
 }

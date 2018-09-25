@@ -7,5 +7,9 @@ namespace Rik.StatusPage.Configuration
         public string ProtocolVersion { get; set; }
         public string Uri { get; set; }
         public string UserId { get; set; }
+
+        public XRoadProducerStatusProviderOptions(string name)
+            : base(name)
+        { }
     }
 }

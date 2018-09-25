@@ -3,15 +3,15 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Rik.StatusPage.AspNetCore
 {
-    public static class WebHostBuilderExtensions
+    public static class ApplicationBuilderExtensions
     {
         public static IApplicationBuilder UseStatusPage<TStartup>(this IApplicationBuilder builder)
             where TStartup : class
         {
-            return builder.UseStatusPage<TStartup>(new StatusPageOptions());
+            return builder.UseStatusPage<TStartup>(new StatusPageMapOptions());
         }
 
-        public static IApplicationBuilder UseStatusPage<TStartup>(this IApplicationBuilder builder, StatusPageOptions options)
+        public static IApplicationBuilder UseStatusPage<TStartup>(this IApplicationBuilder builder, StatusPageMapOptions options)
             where TStartup : class
         {
             if (options == null)

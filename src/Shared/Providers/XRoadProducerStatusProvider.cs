@@ -28,7 +28,7 @@ namespace Rik.StatusPage.Providers
         public XRoadProducerStatusProvider(XRoadProducerStatusProviderOptions options)
             : base(options)
         {
-            if (IsValidProtocolVersion(options.ProtocolVersion))
+            if (!IsValidProtocolVersion(options.ProtocolVersion))
                 throw new ArgumentException("X-Road protocol version is required.", nameof(options.ProtocolVersion));
 
             if (string.IsNullOrWhiteSpace(options.Uri))
@@ -75,7 +75,7 @@ namespace Rik.StatusPage.Providers
             var xrdNamespace = GetXRoadNamespace();
 
             using (var stream = await request.GetRequestStreamAsync())
-            using (var writer = XmlWriter.Create(stream))
+            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true }))
             {
                 await writer.WriteStartDocumentAsync();
                 await writer.WriteStartElementAsync(soapenv, "Envelope", SOAP_ENV_NAMESPACE);

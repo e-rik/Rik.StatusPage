@@ -48,9 +48,8 @@ namespace Rik.StatusPage.Test.Providers
 
         private static FileStorageStatusProvider BuildProvider(Action<FileStorageStatusProviderOptions> customizer = null)
         {
-            var options = new FileStorageStatusProviderOptions
+            var options = new FileStorageStatusProviderOptions(Name)
             {
-                Name = Name,
                 StoragePath = StoragePath,
                 RequireRead = true,
                 RequireWrite = true
