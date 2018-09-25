@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection.Emit;
 using Rik.StatusPage.Configuration;
+using Rik.StatusPage.Internal;
 
 namespace Rik.StatusPage.Providers
 {
@@ -16,21 +17,18 @@ namespace Rik.StatusPage.Providers
         protected override string VersionQuery => "SELECT SERVERPROPERTY('productversion'), SERVERPROPERTY('productlevel'), SERVERPROPERTY('edition')";
         protected override string PlatformName => "Microsoft SQL Server";
 
-        public MsSqlDatabaseStatusProvider(StatusProviderConfigurationElement configuration)
-            : base(configuration)
-        { }
+        public override string DisplayUri => getDatabaseUri(options.ConnectionString);
 
-        protected override string GetUri()
-        {
-            return getDatabaseUri(configuration.ConnectionString);
-        }
+        public MsSqlDatabaseStatusProvider(DatabaseStatusProviderOptions options)
+            : base(options)
+        { }
 
         private static GetDatabaseUriDelegate CreateGetDatabaseUri()
         {
             var method = new DynamicMethod("MsSqlDatabaseStatusProvider_getDatabaseUri", typeof(string), new [] { typeof(string) });
             var il = method.GetILGenerator();
 
-            var builderType = FindTypeOrFailWith("System.Data.SqlClient.SqlConnectionStringBuilder, System.Data", "Could not load type 'SqlConnectionStringBuilder'.");
+            var builderType = TypeHelper.FindTypeOrFailWith("System.Data.SqlClient.SqlConnectionStringBuilder, System.Data", "Could not load type 'SqlConnectionStringBuilder'.");
 
             // var builder = new SqlConnectionStringBuilder(connectionString);
             var builder = il.DeclareLocal(builderType);

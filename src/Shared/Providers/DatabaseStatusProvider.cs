@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using Rik.StatusPage.Configuration;
+using Rik.StatusPage.Internal;
 using Rik.StatusPage.Schema;
 
 namespace Rik.StatusPage.Providers
 {
-    public abstract class DatabaseStatusProvider : StatusProvider
+    public abstract class DatabaseStatusProvider : StatusProvider<DatabaseStatusProviderOptions>
     {
         protected delegate string GetDatabaseUriDelegate(string connectionString);
 
@@ -17,16 +19,16 @@ namespace Rik.StatusPage.Providers
         protected abstract string VersionQuery { get; }
         protected abstract string PlatformName { get; }
 
-        protected DatabaseStatusProvider(StatusProviderConfigurationElement configuration)
-            : base(configuration)
+        protected DatabaseStatusProvider(DatabaseStatusProviderOptions options)
+            : base(options)
         {
-            if (string.IsNullOrWhiteSpace(configuration.ConnectionString))
-                throw new ArgumentException("Database connection string is required.", nameof(configuration.ConnectionString));
+            if (string.IsNullOrWhiteSpace(options.ConnectionString))
+                throw new ArgumentException("Database connection string is required.", nameof(options.ConnectionString));
 
             connectionType = GetConnectionType();
         }
 
-        protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
+        protected override Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit)
         {
             using (var connection = CreateConnection())
             {
@@ -42,7 +44,7 @@ namespace Rik.StatusPage.Providers
                         Version = Convert.ToString(command.ExecuteScalar())
                     };
 
-                    return externalUnit.SetStatus(UnitStatus.Ok);
+                    return Task.FromResult(externalUnit.SetStatus(UnitStatus.Ok));
                 }
             }
         }
@@ -51,14 +53,14 @@ namespace Rik.StatusPage.Providers
         {
             var connection = (IDbConnection) Activator.CreateInstance(connectionType);
 
-            connection.ConnectionString = configuration.ConnectionString;
+            connection.ConnectionString = options.ConnectionString;
 
             return connection;
         }
 
         private Type GetConnectionType()
         {
-            var type = ConnectionTypeNames.Select(FindType).FirstOrDefault();
+            var type = ConnectionTypeNames.Select(TypeHelper.FindType).FirstOrDefault();
             if (type == null)
                 throw new Exception($"Cannot load database connection type: {string.Join(", ", ConnectionTypeNames)}.");
 

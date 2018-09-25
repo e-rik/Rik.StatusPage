@@ -1,1 +1,1 @@
-dotnet pack --output ..\..\build --configuration Release /p:Version=1.0.0
+dotnet pack --output ..\..\build --configuration Release /p:Version=1.1.0

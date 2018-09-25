@@ -21,7 +21,7 @@ namespace Rik.StatusPage
         public const string StatusPath = "~/status.xml";
 
         private static readonly string key = $"__Rik.StatusPage__{AppDomain.CurrentDomain.Id}__Exception__";
-        private static readonly Func<string, StatusProviderConfigurationElement, StatusProvider> statusProviderFactory;
+        private static readonly Func<string, StatusProviderConfigurationElement, IStatusProvider> statusProviderFactory;
         private static readonly Lazy<XmlSerializer> serializer = new Lazy<XmlSerializer>(() => new XmlSerializer(typeof(Application)));
         private static readonly StatusPageConfigurationSection statusPageConfiguration = (StatusPageConfigurationSection)ConfigurationManager.GetSection("rik.statuspage");
         private static readonly XmlDocument document = new XmlDocument();
@@ -75,15 +75,15 @@ namespace Rik.StatusPage
                     .OfType<StatusProviderConfigurationElement>()
                     .Select(x => statusProviderFactory(x.Provider, x))
                     .ToList()
-                ?? new List<StatusProvider>();
+                ?? new List<IStatusProvider>();
 
             var assemblyName = GetWebEntryAssembly(context).GetName();
 
             var externalUnits = new ConcurrentBag<ExternalUnit>();
 
-            Parallel.ForEach(externalStatusProviders, p =>
+            Parallel.ForEach(externalStatusProviders, async p =>
             {
-                var status = p.CheckStatus();
+                var status = await p.CheckStatusAsync();
 
                 if (status != null)
                     externalUnits.Add(status);
@@ -194,7 +194,7 @@ namespace Rik.StatusPage
             statusProviderFactory = (name, configuration) =>
             {
                 if (mapping.TryGetValue(name, out var statusProviderType))
-                    return (StatusProvider) Activator.CreateInstance(statusProviderType, configuration);
+                    return (IStatusProvider) Activator.CreateInstance(statusProviderType, configuration);
 
                 statusProviderType = Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
                 if (statusProviderType == null || statusProviderType.IsAbstract)
@@ -202,7 +202,7 @@ namespace Rik.StatusPage
 
                 mapping.Add(name, statusProviderType);
 
-                return (StatusProvider)Activator.CreateInstance(statusProviderType, configuration);
+                return (IStatusProvider)Activator.CreateInstance(statusProviderType, configuration);
             };
         }
     }

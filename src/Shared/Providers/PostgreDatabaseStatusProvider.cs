@@ -13,8 +13,10 @@ namespace Rik.StatusPage.Providers
         protected override string VersionQuery { get; } = "SELECT version();";
         protected override string PlatformName { get; } = "PostgreSQL Database";
 
-        public PostgreDatabaseStatusProvider(StatusProviderConfigurationElement configuration)
-            : base(configuration)
+        public override string DisplayUri => "";
+
+        public PostgreDatabaseStatusProvider(DatabaseStatusProviderOptions options)
+            : base(options)
         { }
     }
 }

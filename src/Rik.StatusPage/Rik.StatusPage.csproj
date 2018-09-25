@@ -1,22 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <AssemblyName>Rik.StatusPage</AssemblyName>
-    <Authors>Janno Põldma;Jakko Sikkar</Authors>
     <Description>Staatuslehe koostamise moodul AspNet rakendustele.</Description>
     <TargetFramework>net461</TargetFramework>
-    <Copyright>Copyright © 2017 Janno Põldma and Jakko Sikkar</Copyright>
     <PackageId>Rik.StatusPage</PackageId>
     <PackageTags>rik;status;page</PackageTags>
     <PackageProjectUrl>https://github.com/e-rik/Rik.StatusPage</PackageProjectUrl>
     <PackageLicenseUrl>http://github.com/e-rik/Rik.StatusPage/blob/master/LICENSE.txt</PackageLicenseUrl>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <AssemblyOriginatorKeyFile>..\..\Rik.StatusPage.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
-  </PropertyGroup>
+
+  <Import Project="..\AssemblyInfo.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs">
+      <Link>%(RecursiveDir)\%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
   <ItemGroup>
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
   </ItemGroup>
+
 </Project>

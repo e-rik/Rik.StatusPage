@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Rik.StatusPage.AspNetCore</AssemblyName>
+    <Description>Staatuslehe koostamise moodul AspNetCore rakendustele.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Rik.StatusPage.AspNetCore</PackageId>
+    <PackageTags>rik;status;page;aspnetcore</PackageTags>
+    <PackageProjectUrl>https://github.com/e-rik/Rik.StatusPage</PackageProjectUrl>
+    <PackageLicenseUrl>http://github.com/e-rik/Rik.StatusPage/blob/master/LICENSE.txt</PackageLicenseUrl>
+  </PropertyGroup>
+
+  <Import Project="..\AssemblyInfo.props" />
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs">
+      <Link>%(RecursiveDir)\%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Hosting.Extensions" Version="1.0.0-beta2-final" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.5.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.3" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+  </ItemGroup>
+
+</Project>
