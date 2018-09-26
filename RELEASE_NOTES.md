@@ -1,8 +1,7 @@
-﻿#### 1.1.0 - Unreleased
-* New key used to sign the assembly
+﻿#### 1.1.0 - 26.09.2018
 * Status page middleware for AspNetCore applications
 * Use asynchronous workflow
-* Upgrade RabbitMq provider to EasyNetQ 1.0.0
+* Drop RabbitMQ provider (use custom status provider implementation).
 * Improved provider options (strong types).
 
 #### 1.0.1 - 13.11.2017
