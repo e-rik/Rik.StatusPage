@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Authors>Janno Põldma;Jakko Sikkar</Authors>
     <Copyright>Copyright © 2018 Janno Põldma and Jakko Sikkar</Copyright>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">

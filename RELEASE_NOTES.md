@@ -1,4 +1,7 @@
-﻿#### 1.1.0 - 26.09.2018
+﻿#### 1.1.1 - 27.09.2018
+* Fix ASP.NET status page module.
+
+#### 1.1.0 - 26.09.2018
 * Status page middleware for AspNetCore applications
 * Use asynchronous workflow
 * Drop RabbitMQ provider (use custom status provider implementation).

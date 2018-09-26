@@ -27,8 +27,11 @@ namespace Rik.StatusPage
 
         public void Init(HttpApplication context)
         {
+            var asyncHelper = new EventHandlerTaskAsyncHelper(WriteStatusResponseAsync);
+
             context.BeginRequest += OnBeginRequest;
-            context.EndRequest += OnEndRequest;
+
+            context.AddOnEndRequestAsync(asyncHelper.BeginEventHandler, asyncHelper.EndEventHandler);
         }
 
         public void Dispose()
@@ -42,14 +45,14 @@ namespace Rik.StatusPage
                 application.Response.End();
         }
 
-        private static void OnEndRequest(object sender, EventArgs args)
+        private static async Task WriteStatusResponseAsync(object sender, EventArgs args)
         {
             var application = (HttpApplication)sender;
 
             var isApplicationStartFailure = IsApplicationStartFailure(application);
 
             if (IsStatusPage(application.Context))
-                WriteStatusPageAsync(application.Context, isApplicationStartFailure ? UnitStatus.NotOk : UnitStatus.Ok).ConfigureAwait(false).GetAwaiter().GetResult();
+                await WriteStatusPageAsync(application.Context, isApplicationStartFailure ? UnitStatus.NotOk : UnitStatus.Ok);
 
             if (isApplicationStartFailure)
                 HttpRuntime.UnloadAppDomain();
@@ -188,7 +191,7 @@ namespace Rik.StatusPage
                 if (mapping.TryGetValue(name, out var statusProviderType))
                     return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
 
-                statusProviderType = Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
+                statusProviderType = GetCustomProviderType(name, configuration) ?? Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
                 if (statusProviderType == null || statusProviderType.IsAbstract)
                     throw new Exception($"Invalid status provider name: {name}.");
 
@@ -196,6 +199,20 @@ namespace Rik.StatusPage
 
                 return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
             };
+        }
+
+        private static Type GetCustomProviderType(string name, StatusProviderConfigurationElement configurationElement)
+        {
+            if (!"Custom".Equals(name))
+                return null;
+
+            var classKey = configurationElement.UnrecognizedAttributes.Keys.SingleOrDefault(x => "class".Equals(x.ToLower()));
+            var classValue = classKey != null ? configurationElement.UnrecognizedAttributes[classKey] : null;
+
+            if (string.IsNullOrEmpty(classValue))
+                throw new ArgumentNullException(nameof(name), @"Custom provider element must define class attribute which refers to provider type.");
+
+            return Type.GetType(classValue);
         }
 
         private static StatusProviderOptions InitializeStatusProviderOptions(Type statusProviderType, StatusProviderConfigurationElement configurationElement)
@@ -213,7 +230,7 @@ namespace Rik.StatusPage
             var attributes = configurationElement.UnrecognizedAttributes.ToDictionary(x => x.Key.ToLower(), x => x.Value);
             foreach (var propertyInfo in optionsType.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => p.CanWrite))
                 if (attributes.ContainsKey(propertyInfo.Name.ToLower()))
-                    propertyInfo.SetValue(options, Convert.ChangeType(attributes[propertyInfo.Name.ToLower()], propertyInfo.PropertyType));
+                    propertyInfo.SetValue(options, Convert.ChangeType(attributes[propertyInfo.Name.ToLower()].GetAppSettingsOrValue(), propertyInfo.PropertyType));
 
             return options;
         }
