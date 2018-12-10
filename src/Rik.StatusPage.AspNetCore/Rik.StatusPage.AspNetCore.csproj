@@ -7,7 +7,7 @@
     <PackageId>Rik.StatusPage.AspNetCore</PackageId>
     <PackageTags>rik;status;page;aspnetcore</PackageTags>
     <PackageProjectUrl>https://github.com/e-rik/Rik.StatusPage</PackageProjectUrl>
-    <PackageLicenseUrl>http://github.com/e-rik/Rik.StatusPage/blob/master/LICENSE.txt</PackageLicenseUrl>
+    <PackageLicense>http://github.com/e-rik/Rik.StatusPage/blob/master/LICENSE.txt</PackageLicense>
   </PropertyGroup>
 
   <Import Project="..\AssemblyInfo.props" />
