@@ -188,23 +188,31 @@ namespace Rik.StatusPage
 
             statusProviderFactory = (name, configuration) =>
             {
-                if (mapping.TryGetValue(name, out var statusProviderType))
+                var isCustomProvider = TryGetCustomProviderTypeName(name, configuration, out var customTypeName);
+                var key = isCustomProvider ? $"Custom#{customTypeName}" : name;
+
+                if (mapping.TryGetValue(key, out var statusProviderType))
                     return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
 
-                statusProviderType = GetCustomProviderType(name, configuration) ?? Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
-                if (statusProviderType == null || statusProviderType.IsAbstract)
-                    throw new Exception($"Invalid status provider name: {name}.");
+                statusProviderType = isCustomProvider
+                    ? Type.GetType(customTypeName)
+                    : Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
 
-                mapping.Add(name, statusProviderType);
+                if (statusProviderType == null || statusProviderType.IsAbstract)
+                    throw new Exception($"Invalid status provider configuration: {key}.");
+
+                mapping.Add(key, statusProviderType);
 
                 return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
             };
         }
 
-        private static Type GetCustomProviderType(string name, StatusProviderConfigurationElement configurationElement)
+        private static bool TryGetCustomProviderTypeName(string name, StatusProviderConfigurationElement configurationElement, out string typeName)
         {
+            typeName = null;
+
             if (!"Custom".Equals(name))
-                return null;
+                return false;
 
             var classKey = configurationElement.UnrecognizedAttributes.Keys.SingleOrDefault(x => "class".Equals(x.ToLower()));
             var classValue = classKey != null ? configurationElement.UnrecognizedAttributes[classKey] : null;
@@ -212,7 +220,9 @@ namespace Rik.StatusPage
             if (string.IsNullOrEmpty(classValue))
                 throw new ArgumentNullException(nameof(name), @"Custom provider element must define class attribute which refers to provider type.");
 
-            return Type.GetType(classValue);
+            typeName = classValue;
+
+            return true;
         }
 
         private static StatusProviderOptions InitializeStatusProviderOptions(Type statusProviderType, StatusProviderConfigurationElement configurationElement)
