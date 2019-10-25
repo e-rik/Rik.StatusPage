@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,14 +14,18 @@ namespace Rik.StatusPage.AspNetCore.Test
             this.configuration = configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services)
+        public IServiceProvider ConfigureServices()
         {
+            var services = new ServiceCollection();
+
             services.AddStatusPage(configuration);
+
+            return services.BuildServiceProvider();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMiddleware<StatusPageMiddleware>();
+            app.UseStatusPageMiddleware();
         }
     }
 }

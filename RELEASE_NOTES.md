@@ -1,4 +1,7 @@
-﻿#### 1.1.2 - 10.12.2018
+﻿#### 1.1.3 - 25.10.2019
+* Remove `AspNet.Hosting.Extensions` dependency.
+
+#### 1.1.2 - 10.12.2018
 * Fix configuration issue with multiple custom status providers.
 
 #### 1.1.1 - 27.09.2018

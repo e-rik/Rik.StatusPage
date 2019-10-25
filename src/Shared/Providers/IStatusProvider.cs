@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Rik.StatusPage.Schema;
 
@@ -5,6 +6,9 @@ namespace Rik.StatusPage.Providers
 {
     public interface IStatusProvider
     {
-        Task<ExternalUnit> CheckStatusAsync();
+        string DisplayUri { get; }
+        string Name { get; }
+
+        Task<ExternalUnit> CheckStatusAsync(CancellationToken cancellationToken);
     }
 }

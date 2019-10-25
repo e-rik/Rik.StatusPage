@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Rik.StatusPage.Configuration;
 using Rik.StatusPage.Schema;
@@ -10,30 +11,30 @@ namespace Rik.StatusPage.Providers
     {
         protected readonly TOptions options;
 
+        public virtual string Name => options.Name;
+
         public abstract string DisplayUri { get; }
 
         protected StatusProvider(TOptions options)
         {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-
-            if (string.IsNullOrWhiteSpace(options.Name))
-                throw new ArgumentException("Status provider name is required.", nameof(options.Name));
-
-            this.options = options;
+            this.options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        protected abstract Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit);
+        protected virtual ExternalUnit OnCheckStatus(ExternalUnit externalUnit) =>
+            externalUnit;
 
-        public virtual async Task<ExternalUnit> CheckStatusAsync()
+        protected virtual Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit, CancellationToken cancellationToken) =>
+            Task.FromResult(OnCheckStatus(externalUnit));
+
+        public virtual async Task<ExternalUnit> CheckStatusAsync(CancellationToken cancellationToken)
         {
-            var externalUnit = new ExternalUnit { Name = options.Name };
+            var externalUnit = new ExternalUnit { Name = Name };
 
             try
             {
                 externalUnit.Uri = string.IsNullOrWhiteSpace(options.DisplayUri) ? DisplayUri : options.DisplayUri;
 
-                return await OnCheckStatusAsync(externalUnit);
+                return await OnCheckStatusAsync(externalUnit, cancellationToken);
             }
             catch (Exception exception)
             {

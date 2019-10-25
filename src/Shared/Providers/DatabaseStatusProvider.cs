@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Threading.Tasks;
 using Rik.StatusPage.Configuration;
 using Rik.StatusPage.Internal;
 using Rik.StatusPage.Schema;
@@ -22,36 +21,35 @@ namespace Rik.StatusPage.Providers
         protected DatabaseStatusProvider(DatabaseStatusProviderOptions options)
             : base(options)
         {
-            if (string.IsNullOrWhiteSpace(options.ConnectionString))
-                throw new ArgumentException("Database connection string is required.", nameof(options.ConnectionString));
-
             connectionType = GetConnectionType();
         }
 
-        protected override Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit)
+        protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
-            using (var connection = CreateConnection())
+            if (string.IsNullOrWhiteSpace(options.ConnectionString))
+                return externalUnit.SetStatus(UnitStatus.NotOk, $"Database connection string is required.");
+
+            if (connectionType == null)
+                return externalUnit.SetStatus(UnitStatus.NotOk, $"Cannot load database connection type: {string.Join(", ", ConnectionTypeNames)}.");
+
+            using var connection = CreateConnection();
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = VersionQuery;
+
+            externalUnit.ServerPlatform = new ServerPlatform
             {
-                connection.Open();
+                Name = PlatformName,
+                Version = Convert.ToString(command.ExecuteScalar())
+            };
 
-                using (var command = connection.CreateCommand())
-                {
-                    command.CommandText = VersionQuery;
-
-                    externalUnit.ServerPlatform = new ServerPlatform
-                    {
-                        Name = PlatformName,
-                        Version = Convert.ToString(command.ExecuteScalar())
-                    };
-
-                    return Task.FromResult(externalUnit.SetStatus(UnitStatus.Ok));
-                }
-            }
+            return externalUnit.SetStatus(UnitStatus.Ok);
         }
 
         private IDbConnection CreateConnection()
         {
-            var connection = (IDbConnection) Activator.CreateInstance(connectionType);
+            var connection = (IDbConnection)Activator.CreateInstance(connectionType);
 
             connection.ConnectionString = options.ConnectionString;
 
@@ -60,11 +58,7 @@ namespace Rik.StatusPage.Providers
 
         private Type GetConnectionType()
         {
-            var type = ConnectionTypeNames.Select(TypeHelper.FindType).FirstOrDefault();
-            if (type == null)
-                throw new Exception($"Cannot load database connection type: {string.Join(", ", ConnectionTypeNames)}.");
-
-            return type;
+            return ConnectionTypeNames.Select(TypeHelper.FindType).FirstOrDefault();
         }
     }
 }

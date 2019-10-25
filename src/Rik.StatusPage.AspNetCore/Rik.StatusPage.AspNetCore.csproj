@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Rik.StatusPage.AspNetCore</AssemblyName>
     <Description>Staatuslehe koostamise moodul AspNetCore rakendustele.</Description>
+    <LangVersion>latest</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Rik.StatusPage.AspNetCore</PackageId>
     <PackageTags>rik;status;page;aspnetcore</PackageTags>
@@ -19,12 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AspNet.Hosting.Extensions" Version="1.0.0-beta2-final" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.1.1" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.5.0" />
-    <PackageReference Include="System.Net.Http" Version="4.3.3" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.4" />
+    <PackageReference Include="System.IO.FileSystem.AccessControl" Version="4.6.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.6.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.6.0" />
   </ItemGroup>
 
 </Project>

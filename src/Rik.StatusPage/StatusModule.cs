@@ -81,7 +81,7 @@ namespace Rik.StatusPage
 
             var assemblyName = GetWebEntryAssembly(context).GetName();
 
-            var checkStatusTasks = externalStatusProviders.Select(p => p.CheckStatusAsync());
+            var checkStatusTasks = externalStatusProviders.Select(p => p.CheckStatusAsync(default));
             var externalUnits = await Task.WhenAll(checkStatusTasks);
 
             var name = statusPageConfiguration?.Application.Name;
@@ -189,9 +189,9 @@ namespace Rik.StatusPage
             statusProviderFactory = (name, configuration) =>
             {
                 var isCustomProvider = TryGetCustomProviderTypeName(name, configuration, out var customTypeName);
-                var key = isCustomProvider ? $"Custom#{customTypeName}" : name;
+                var mappingKey = isCustomProvider ? $"Custom#{customTypeName}" : name;
 
-                if (mapping.TryGetValue(key, out var statusProviderType))
+                if (mapping.TryGetValue(mappingKey, out var statusProviderType))
                     return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
 
                 statusProviderType = isCustomProvider
@@ -199,9 +199,9 @@ namespace Rik.StatusPage
                     : Type.GetType($"Rik.StatusPage.Providers.{name}StatusProvider, Rik.StatusPage");
 
                 if (statusProviderType == null || statusProviderType.IsAbstract)
-                    throw new Exception($"Invalid status provider configuration: {key}.");
+                    throw new Exception($"Invalid status provider configuration: {mappingKey}.");
 
-                mapping.Add(key, statusProviderType);
+                mapping.Add(mappingKey, statusProviderType);
 
                 return (IStatusProvider)Activator.CreateInstance(statusProviderType, InitializeStatusProviderOptions(statusProviderType, configuration));
             };

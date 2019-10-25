@@ -3,6 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Rik.StatusPage</AssemblyName>
     <Description>Staatuslehe koostamise moodul AspNet rakendustele.</Description>
+    <LangVersion>latest</LangVersion>
     <TargetFramework>net461</TargetFramework>
     <PackageId>Rik.StatusPage</PackageId>
     <PackageTags>rik;status;page</PackageTags>

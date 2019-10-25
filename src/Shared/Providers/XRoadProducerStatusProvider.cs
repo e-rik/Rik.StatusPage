@@ -4,6 +4,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.XPath;
@@ -27,26 +28,26 @@ namespace Rik.StatusPage.Providers
 
         public XRoadProducerStatusProvider(XRoadProducerStatusProviderOptions options)
             : base(options)
-        {
-            if (!IsValidProtocolVersion(options.ProtocolVersion))
-                throw new ArgumentException("X-Road protocol version is required.", nameof(options.ProtocolVersion));
+        { }
 
-            if (string.IsNullOrWhiteSpace(options.Uri))
-                throw new ArgumentException("X-Road security server uri is required.", nameof(options.Uri));
-
-            if (string.IsNullOrWhiteSpace(options.ProducerName))
-                throw new ArgumentException("X-Road producer name is required.", nameof(options.ProducerName));
-
-            if (string.IsNullOrWhiteSpace(options.Consumer))
-                throw new ArgumentException("X-Road consumer is required.", nameof(options.Consumer));
-
-            if (string.IsNullOrWhiteSpace(options.UserId))
-                throw new ArgumentException("X-Road user id is required.", nameof(options.UserId));
-        }
-
-        protected override async Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit)
+        protected override async Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit, CancellationToken cancellationToken)
         {
             externalUnit.ServerPlatform = new ServerPlatform { Name = "X-Road" };
+
+            if (!IsValidProtocolVersion(options.ProtocolVersion))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "X-Road protocol version is required.");
+
+            if (string.IsNullOrWhiteSpace(options.Uri))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "X-Road security server uri is required.");
+
+            if (string.IsNullOrWhiteSpace(options.ProducerName))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "X-Road producer name is required.");
+
+            if (string.IsNullOrWhiteSpace(options.Consumer))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "X-Road consumer is required.");
+
+            if (string.IsNullOrWhiteSpace(options.UserId))
+                return externalUnit.SetStatus(UnitStatus.NotOk, "X-Road user id is required.");
 
             var statusCode = await GetStatusCodeAsync();
 
@@ -75,8 +76,8 @@ namespace Rik.StatusPage.Providers
             var xrdNamespace = GetXRoadNamespace();
 
             using (var stream = await request.GetRequestStreamAsync())
-            using (var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true }))
             {
+                using var writer = XmlWriter.Create(stream, new XmlWriterSettings { Async = true });
                 await writer.WriteStartDocumentAsync();
                 await writer.WriteStartElementAsync(soapenv, "Envelope", SOAP_ENV_NAMESPACE);
 
@@ -100,27 +101,25 @@ namespace Rik.StatusPage.Providers
                 await writer.WriteEndDocumentAsync();
             }
 
-            using (var response = await request.GetResponseAsync())
-            using (var responseStream = response.GetResponseStream())
-            {
-                if (responseStream == null)
-                    throw new Exception("Could not get response from security server.");
+            using var response = await request.GetResponseAsync();
+            using var responseStream = response.GetResponseStream();
+            if (responseStream == null)
+                throw new Exception("Could not get response from security server.");
 
-                var document = new XPathDocument(responseStream);
-                var navigator = document.CreateNavigator();
+            var document = new XPathDocument(responseStream);
+            var navigator = document.CreateNavigator();
 
-                var manager = new XmlNamespaceManager(navigator.NameTable ?? new NameTable());
-                manager.AddNamespace(soapenv, SOAP_ENV_NAMESPACE);
-                manager.AddNamespace(xrd, xrdNamespace);
+            var manager = new XmlNamespaceManager(navigator.NameTable);
+            manager.AddNamespace(soapenv, SOAP_ENV_NAMESPACE);
+            manager.AddNamespace(xrd, xrdNamespace);
 
-                var selector = $"//soapenv:Envelope/soapenv:Body/xrd:getStateResponse/{("2.0".Equals(options.ProtocolVersion) ? "keha" : "response")}";
+            var selector = $"//soapenv:Envelope/soapenv:Body/xrd:getStateResponse/{("2.0".Equals(options.ProtocolVersion) ? "keha" : "response")}";
 
-                var resultNode = navigator.SelectSingleNode(selector, manager);
-                if (resultNode == null || !Regex.IsMatch(resultNode.Value, @"\d+"))
-                    throw new Exception("Invalid response.");
+            var resultNode = navigator.SelectSingleNode(selector, manager);
+            if (resultNode == null || !Regex.IsMatch(resultNode.Value, @"\d+"))
+                throw new Exception("Invalid response.");
 
-                return resultNode.ValueAsInt;
-            }
+            return resultNode.ValueAsInt;
         }
 
         private string GetXRoadNamespace()

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
@@ -16,14 +18,20 @@ using RuntimeEnvironment = Rik.StatusPage.Schema.RuntimeEnvironment;
 
 namespace Rik.StatusPage.AspNetCore
 {
-    public class StatusPageMiddleware
+    internal class StatusPageMiddleware
     {
         private static readonly XmlDocument document = new XmlDocument();
         private static readonly Lazy<XmlSerializer> serializer = new Lazy<XmlSerializer>(() => new XmlSerializer(typeof(Application)));
 
+        private readonly Func<IList<IStatusProvider>, CancellationToken, Task> statusProviderCustomization;
+        private readonly Func<Application, CancellationToken, Task> resultCustomization;
+
         // ReSharper disable once UnusedParameter.Local
-        public StatusPageMiddleware(RequestDelegate next)
-        { }
+        public StatusPageMiddleware(RequestDelegate next, Func<IList<IStatusProvider>, CancellationToken, Task> statusProviderCustomization, Func<Application, CancellationToken, Task> resultCustomization)
+        {
+            this.resultCustomization = resultCustomization;
+            this.statusProviderCustomization = statusProviderCustomization;
+        }
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
@@ -31,10 +39,14 @@ namespace Rik.StatusPage.AspNetCore
 
             var application = await CollectStatusAsync(httpContext);
 
-            serializer.Value.Serialize(httpContext.Response.Body, application, new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") }));
+            using var stream = new MemoryStream();
+            serializer.Value.Serialize(stream, application, new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") }));
+            stream.Seek(0, SeekOrigin.Begin);
+
+            await stream.CopyToAsync(httpContext.Response.Body);
         }
 
-        private static async Task<Application> CollectStatusAsync(HttpContext httpContext)
+        private async Task<Application> CollectStatusAsync(HttpContext httpContext)
         {
             var statusPageOptions = httpContext.RequestServices.GetService<StatusPageOptions>();
             var statusProviders = httpContext.RequestServices.GetServices<IStatusProvider>().ToList();
@@ -46,9 +58,11 @@ namespace Rik.StatusPage.AspNetCore
                 statusProviders.Insert(0, mainStatusProvider);
             }
 
+            await statusProviderCustomization(statusProviders, default);
+
             var assemblyName = Assembly.GetExecutingAssembly().GetName();
 
-            var checkStatusTasks = statusProviders.Select(p => p.CheckStatusAsync());
+            var checkStatusTasks = statusProviders.Select(p => p.CheckStatusAsync(default));
 
             var statuses = await Task.WhenAll(checkStatusTasks);
 
@@ -58,7 +72,7 @@ namespace Rik.StatusPage.AspNetCore
             var name = statusPageOptions?.Name;
             var version = statusPageOptions?.Version;
 
-            return new Application
+            var application = new Application
             {
                 Name = string.IsNullOrWhiteSpace(name) ? assemblyName.Name : name,
                 Version = string.IsNullOrWhiteSpace(version) ? assemblyName.Version.ToString() : version,
@@ -68,6 +82,10 @@ namespace Rik.StatusPage.AspNetCore
                 ExternalDependencies = externalDependencies,
                 AdditionalInfo = GetAdditionalInfo(statusPageOptions)
             };
+
+            await resultCustomization(application, default);
+
+            return application;
         }
 
         private static ServerPlatform GetServerPlatform()

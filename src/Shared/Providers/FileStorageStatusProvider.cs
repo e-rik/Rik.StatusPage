@@ -6,7 +6,6 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Rik.StatusPage.Configuration;
 using Rik.StatusPage.Schema;
-using System.Threading.Tasks;
 
 namespace Rik.StatusPage.Providers
 {
@@ -16,28 +15,28 @@ namespace Rik.StatusPage.Providers
 
         public FileStorageStatusProvider(FileStorageStatusProviderOptions options)
             : base(options)
+        { }
+
+        protected override ExternalUnit OnCheckStatus(ExternalUnit externalUnit)
         {
             if (string.IsNullOrWhiteSpace(options.StoragePath))
-                throw new ArgumentException("File storage path is required.", nameof(options.StoragePath));
-        }
+                return externalUnit.SetStatus(UnitStatus.NotOk,"File storage path is required.");
 
-        protected override Task<ExternalUnit> OnCheckStatusAsync(ExternalUnit externalUnit)
-        {
             var directory = new DirectoryInfo(options.StoragePath);
             if (!directory.Exists)
-                return Task.FromResult(externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't exist or is not accessible."));
+                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't exist or is not accessible.");
 
             var accessControl = directory.GetAccessControl();
             var accessRules = accessControl?.GetAccessRules(true, true, typeof(SecurityIdentifier));
             var applicationIdentity = WindowsIdentity.GetCurrent();
 
             if (options.RequireRead && !HasRights(accessRules, applicationIdentity, FileSystemRights.Read))
-                return Task.FromResult(externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't have reading rights."));
+                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't have reading rights.");
 
             if (options.RequireWrite && !HasRights(accessRules, applicationIdentity, FileSystemRights.Write))
-                return Task.FromResult(externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't have writing rights."));
+                return externalUnit.SetStatus(UnitStatus.NotOk, "File storage path doesn't have writing rights.");
 
-            return Task.FromResult(externalUnit.SetStatus(UnitStatus.Ok));
+            return externalUnit.SetStatus(UnitStatus.Ok);
         }
 
         private static bool HasRights(IEnumerable rules, WindowsIdentity identity, FileSystemRights rights)
