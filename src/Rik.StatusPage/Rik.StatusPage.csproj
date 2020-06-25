@@ -9,7 +9,15 @@
     <PackageTags>rik;status;page</PackageTags>
     <PackageProjectUrl>https://github.com/e-rik/Rik.StatusPage</PackageProjectUrl>
     <PackageLicense>http://github.com/e-rik/Rik.StatusPage/blob/master/LICENSE.txt</PackageLicense>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All" />
+  </ItemGroup>
+
 
   <Import Project="..\AssemblyInfo.props" />
 
